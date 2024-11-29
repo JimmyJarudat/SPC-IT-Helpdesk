@@ -1,121 +1,86 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { useUser } from "../../context/UserContext";
+import { useState } from 'react';
+import { useUser } from '../../contexts/UserContext';
+import { useRouter } from 'next/navigation';
 
-const Login = () => {
-    const { setUser } = useUser(); // ดึง setUser จาก UserContext
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
-    const router = useRouter();
+const LoginPage = () => {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState(null);
+  const { login } = useUser();
+  const router = useRouter();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setError(null); // ล้าง error ก่อนเริ่ม
+      await login(username, password); // เรียกฟังก์ชัน login จาก Context
+      router.push('/dashboard'); // เปลี่ยนเส้นทางไปหน้า dashboard หลังล็อกอินสำเร็จ
+    } catch (err) {
+      setError('Invalid username or password. Please try again.');
+    }
+  };
 
-        try {
-            const res = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ username, password }),
-            });
+  return (
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4"
+      >
+        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
 
-            const data = await res.json(); // อ่าน response เพียงครั้งเดียว
+        {error && (
+          <div className="bg-red-100 text-red-700 p-2 rounded mb-4">
+            {error}
+          </div>
+        )}
 
-            if (!res.ok) {
-                setError(data.error || "Login failed");
-                setLoading(false);
-                return;
-            }
-
-            // เก็บข้อมูลผู้ใช้ใน Context
-            setUser({
-                id: data.id,
-                username: data.username,
-                role: data.role,
-                role_status: data.role_status,
-                fullName: data.fullName, // เพิ่ม fullName
-            });
-            console.log("User data in Context:", {
-                id: data.id,
-                username: data.username,
-                role: data.role,
-                role_status: data.role_status,
-                fullName: data.fullName,
-            });
-
-
-            // เก็บ Token ใน Local Storage
-            localStorage.setItem("token", data.token);
-
-            // ตรวจสอบ role_status และนำทางไปยังหน้าที่เหมาะสม
-            if (data.role_status === "approved") {
-                router.push("/dashboard"); // ไปหน้าหลัก
-            } else {
-                router.push("/pendingApproval"); // ไปหน้ารออนุมัติ
-            }
-        } catch (error) {
-            console.error("Login Error:", error);
-            setError("Something went wrong. Please try again.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
-                <h1 className="text-2xl font-bold mb-6 text-center">Login</h1>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Username
-                        </label>
-                        <input
-                            type="text"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">
-                            Password
-                        </label>
-                        <input
-                            type="password"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter your password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-                    {error && (
-                        <p className="text-sm text-red-500">{error}</p>
-                    )}
-                    <button
-                        type="submit"
-                        className={`w-full py-2 text-white rounded-lg ${loading
-                                ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-blue-500 hover:bg-blue-600"
-                            }`}
-                        disabled={loading}
-                    >
-                        {loading ? "Logging in..." : "Login"}
-                    </button>
-                </form>
-            </div>
+        <div className="mb-4">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="username"
+          >
+            Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
         </div>
-    );
+
+        <div className="mb-6">
+          <label
+            className="block text-gray-700 text-sm font-bold mb-2"
+            htmlFor="password"
+          >
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          />
+        </div>
+
+        <div className="flex items-center justify-between">
+          <button
+            type="submit"
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          >
+            Login
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 };
 
-export default Login;
+export default LoginPage;

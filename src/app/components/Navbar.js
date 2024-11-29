@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useSidebarContext } from "./SidebarContext";
-import { useUser } from "../../context/UserContext";
+import { useUser } from "@/contexts/UserContext"; 
 import { useRouter } from "next/navigation";
 import { FaSearch, FaBell, FaCog } from "react-icons/fa";
 import Image from "next/image";
 
 export default function Navbar() {
     const { toggleSidebar } = useSidebarContext();
-    const { user, setUser } = useUser(); // ดึงข้อมูล user และ setUser จาก Context
+    const { user, setUser } = useUser();// ดึงข้อมูล user และ setUser จาก Context
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const router = useRouter();
 
@@ -17,16 +17,12 @@ export default function Navbar() {
         setIsDropdownOpen(!isDropdownOpen);
     };
 
-    const handleLogout = () => {
-        // ลบ token ออกจาก Local Storage
-        localStorage.removeItem("token");
-
-        // รีเซ็ตข้อมูลผู้ใช้ใน Context
-        setUser(null);
-
-        // นำทางไปยังหน้าล็อกอิน
-        router.push("/login");
-    };
+    useEffect(() => {
+        if (!user) {
+          // ถ้าไม่มีผู้ใช้ (ไม่ล็อกอิน), redirect ไปที่หน้า Login
+          router.push('/login');
+        }
+      }, [user, router]);
 
     return (
         <nav className="h-16 bg-white shadow-md flex items-center justify-between px-4">
@@ -102,7 +98,7 @@ export default function Navbar() {
                                 </li>
                                 <li>
                                     <button
-                                        onClick={handleLogout} // เพิ่มฟังก์ชัน handleLogout
+                                        onClick={''} // เพิ่มฟังก์ชัน handleLogout
                                         className="flex items-center px-4 py-2 w-full text-left text-gray-700 hover:bg-gray-100"
                                     >
                                         Sign Out
