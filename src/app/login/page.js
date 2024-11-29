@@ -40,7 +40,16 @@ const Login = () => {
                 username: data.username,
                 role: data.role,
                 role_status: data.role_status,
+                fullName: data.fullName, // เพิ่ม fullName
             });
+            console.log("User data in Context:", {
+                id: data.id,
+                username: data.username,
+                role: data.role,
+                role_status: data.role_status,
+                fullName: data.fullName,
+            });
+
 
             // เก็บ Token ใน Local Storage
             localStorage.setItem("token", data.token);
@@ -95,11 +104,10 @@ const Login = () => {
                     )}
                     <button
                         type="submit"
-                        className={`w-full py-2 text-white rounded-lg ${
-                            loading
+                        className={`w-full py-2 text-white rounded-lg ${loading
                                 ? "bg-gray-400 cursor-not-allowed"
                                 : "bg-blue-500 hover:bg-blue-600"
-                        }`}
+                            }`}
                         disabled={loading}
                     >
                         {loading ? "Logging in..." : "Login"}

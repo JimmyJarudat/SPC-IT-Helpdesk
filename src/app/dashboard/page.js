@@ -1,10 +1,11 @@
 "use client";
 
 import { SidebarProvider } from "../components/SidebarContext";
+import withAuth from '../../hoc/withAuth';
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 
-export default function Dashboard() {
+const Dashboard = () => {
   return (
     <SidebarProvider>
       <div className="flex h-screen">
@@ -23,3 +24,5 @@ export default function Dashboard() {
     </SidebarProvider>
   );
 }
+export default withAuth(Dashboard, ['admin', 'user']);
+ 

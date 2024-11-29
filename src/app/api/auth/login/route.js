@@ -28,11 +28,20 @@ export async function POST(req) {
         );
 
         return new Response(
-            JSON.stringify({ token, role_status: user.role_status }),
+            JSON.stringify({
+                id: user._id,
+                username: user.username,
+                role: user.role,
+                role_status: user.role_status,
+                fullName: user.fullName,
+                token,
+            }),
             { status: 200 }
         );
+
     } catch (error) {
         console.error("Error in login API:", error);
         return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
     }
+
 }
