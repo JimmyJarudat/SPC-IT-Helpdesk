@@ -4,30 +4,25 @@ import { useEffect } from 'react';
 
 const withAuth = (Component, allowedRoles) => {
   return (props) => {
-    const { user } = useUser();
+    const { user, isLoading } = useUser();
     const router = useRouter();
 
     useEffect(() => {
-      if (user === undefined) {
-        // รอให้ข้อมูลผู้ใช้โหลดก่อน
-        return;
-      }
+      if (isLoading) return; // รอโหลดข้อมูลเสร็จ
 
       if (!user) {
-        // หากยังไม่ได้ล็อกอิน นำทางไปที่หน้าล็อกอิน
+        console.log("Redirecting to /login..."); // Debug
         router.replace('/login');
       } else if (!allowedRoles.includes(user.role)) {
-        // หากสิทธิ์ไม่เพียงพอ นำทางไปที่หน้า Unauthorized
+        console.log("Redirecting to /unauthorized..."); // Debug
         router.replace('/unauthorized');
       }
-    }, [user, router, allowedRoles]);
+    }, [user, isLoading, router, allowedRoles]);
 
-    // แสดง Loading จนกว่าจะตรวจสอบเสร็จ
-    if (user === undefined || !user || !allowedRoles.includes(user.role)) {
+    if (isLoading || !user || !allowedRoles.includes(user.role)) {
       return <p>Loading...</p>;
     }
 
-    // แสดง Component หากสิทธิ์ถูกต้อง
     return <Component {...props} />;
   };
 };

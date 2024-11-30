@@ -21,22 +21,37 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    // ลบฟิลด์ password ออก
-    user.password = undefined;
+    user.password = undefined; // ลบฟิลด์ password ออกจาก Response
 
+    const token = jwt.sign({
+      id: user._id,
+      fullName: user.fullName,
+      username: user.username,
+      role: user.role,
+      role_status: user.role_status,
+      company: user.company,
+      department: user.department,
+      email: user.email,
+      employeeID: user.employeeID,
+      nickName: user.nickName,
+      phone: user.phone,
+      profileImage: user.profileImage,
 
-    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET, { expiresIn: '1d' });
+    }, JWT_SECRET, { expiresIn: '7d' }); // Token มีอายุ 7 วัน
+    console.log("Generated Token:", token); // Debug Token
+
     const response = NextResponse.json({
       message: 'Login successful',
-      user: user, // ส่งข้อมูลผู้ใช้ทั้งหมด (ยกเว้นรหัสผ่าน)
+      user, // ส่งข้อมูลผู้ใช้ทั้งหมด (ยกเว้น password)
+      token,
     });
 
     response.cookies.set('authToken', token, {
-      httpOnly: true,
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24 * 7, // คุกกี้หมดอายุใน 7 วัน
     });
 
     return response;

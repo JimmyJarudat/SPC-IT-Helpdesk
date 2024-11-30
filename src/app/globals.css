@@ -60,3 +60,12 @@ body {
 }
 
 
+option::before {
+  content: " ";
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background-color: var(--theme-color);
+}
