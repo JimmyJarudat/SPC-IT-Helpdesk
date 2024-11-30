@@ -7,6 +7,8 @@ import { useRouter } from "next/navigation";
 import { FaSearch, FaBell, FaCog, FaSignOutAlt, FaUser } from "react-icons/fa";
 import Image from "next/image";
 import SettingsDrawer from "./SettingsDrawer";
+import DropdownMenu from "./DropdownMenuNav";
+
 export default function Navbar() {
     const { toggleSidebar } = useSidebarContext();
     const { user, logout } = useUser();
@@ -39,36 +41,39 @@ export default function Navbar() {
     }, [user, router]);
 
     return (
-        <nav className="h-16 bg-white shadow-md flex items-center justify-between px-4">
+
+        <nav className="pr-[2%] h-16 bg-white-50 dark:bg-gray-900 shadow-md flex items-center justify-between px-4 flex-shrink-0 ">
             {/* ปุ่มเปิด/ปิด Sidebar และชื่อ Dashboard */}
             <div className="flex items-center space-x-4">
                 <button
                     onClick={toggleSidebar}
-                    className="text-xl text-gray-600 hover:text-gray-800 focus:outline-none"
+                    className="text-xl text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white focus:outline-none"
                 >
                     ☰
                 </button>
-                <h1 className="text-lg font-bold text-gray-800">Dashboard</h1>
+                <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                    Dashboard
+                </h1>
             </div>
 
             {/* ส่วนขวาของ Navbar */}
             <div className="flex items-center space-x-6 relative">
-                <button className="text-gray-600 hover:text-gray-800 focus:outline-none">
+                <button className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white focus:outline-none">
                     <FaSearch size={20} />
                 </button>
 
                 <div className="relative">
-                    <button className="text-gray-600 hover:text-gray-800 focus:outline-none">
+                    <button className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white focus:outline-none">
                         <FaBell size={20} />
                     </button>
-                    <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-white"></span>
+                    <span className="absolute top-0 right-0 w-3 h-3 bg-red-500 dark:bg-red-400 rounded-full border-2 border-white dark:border-gray-800"></span>
                 </div>
 
                 {/* ไอคอนการตั้งค่า */}
                 <div className="relative">
                     <button
                         onClick={toggleSettings}
-                        className="text-gray-600 hover:text-gray-800 focus:outline-none"
+                        className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-white focus:outline-none"
                     >
                         <FaCog size={20} />
                     </button>
@@ -94,35 +99,26 @@ export default function Navbar() {
                             height={32}
                         />
                         <div className="hidden sm:block">
-                            <p className="text-sm font-semibold text-gray-800">{user?.fullName || "Guest"}</p>
-                            <p className="text-xs text-gray-500">{user?.role || "Role"}</p>
+                            <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
+                                {user?.fullName || "Guest"}
+                            </p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">
+                                {user?.role || "Role"}
+                            </p>
                         </div>
                     </button>
 
-                    {isDropdownOpen && (
-                        <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                            <ul className="py-2">
-                                <li>
-                                    <button
-                                        className="flex items-center px-4 py-2 w-full text-left text-gray-700 hover:bg-gray-100"
-                                        onClick={() => router.push("/profile")}
-                                    >
-                                        <FaUser className="mr-2" /> Profile
-                                    </button>
-                                </li>
-                                <li>
-                                    <button
-                                        onClick={handleLogout}
-                                        className="flex items-center px-4 py-2 w-full text-left text-gray-700 hover:bg-gray-100"
-                                    >
-                                        <FaSignOutAlt className="mr-2" /> Sign Out
-                                    </button>
-                                </li>
-                            </ul>
-                        </div>
-                    )}
+                    
+                        <DropdownMenu
+                            isOpen={isDropdownOpen}
+                            onClose={() => setIsDropdownOpen(false)}
+                            handleLogout={handleLogout}
+                        />
+                    
+
                 </div>
             </div>
         </nav>
+
     );
 }

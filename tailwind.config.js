@@ -5,6 +5,7 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  darkMode: "class", // หรือ 'media'
   theme: {
     extend: {
       colors: {
@@ -13,5 +14,13 @@ module.exports = {
       },
     },
   },
+  safelist: [
+    ...["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "blue", "light-blue", 
+        "cyan", "pink", "purple", "deep-purple", "indigo", "light-green", "deep-orange", "brown", 
+        "gray", "blue-gray"].flatMap((color) =>
+        ["100","200","300","400", "500", "600", "700", "800", "900"].map((weight) => `bg-${color}-${weight}`)
+    ),
+  ],
+  
   plugins: [],
 };

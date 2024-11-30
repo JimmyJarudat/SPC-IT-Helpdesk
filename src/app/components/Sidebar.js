@@ -10,31 +10,40 @@ import {
   FaPlus,
 } from "react-icons/fa";
 import Image from "next/image";
+import { useTheme } from "../../contexts/ThemeContext"; // นำ useTheme มาใช้
+import Link from "next/link";
 
 export default function Sidebar({ activeMenu, setActiveMenu }) {
+  const { theme, toggleThemeMode, setNavMode, setPrimaryColor } = useTheme();
+
   const { isSidebarOpen, toggleSidebar } = useSidebarContext();
   const [activeItem, setActiveItem] = useState("Dashboard");
 
   return (
     <div
-      className={`bg-gray-800 h-screen transition-all duration-300 flex flex-col ${
-        isSidebarOpen ? "w-64" : "w-16"
-      }`}
+      className={`bg-white-50 dark:bg-gray-900 h-screen transition-all duration-300 flex flex-col overflow-hidden ${isSidebarOpen ? "w-64" : "w-16"
+        }`}
     >
       {/* Logo Section */}
       <div
-        className={`flex items-center ${
-          isSidebarOpen ? "justify-start px-4" : "justify-center"
-        } py-6`}
+        className={`flex items-center ${isSidebarOpen ? "justify-start px-4" : "justify-center"
+          } py-6`}
       >
-        <Image
-          src="/asset/png/bg-spc.png"
-          alt="Company Logo"
-          width={40}
-          height={40}
-        />
+        <Link href="/">
+          <Image
+            src="/asset/png/bg-spc.png"
+            alt="Company Logo"
+            width={40}
+            height={40}
+            className="cursor-pointer"
+          />
+        </Link>
         {isSidebarOpen && (
-          <span className="ml-4 text-white text-xl font-bold">Supornchai</span>
+          <Link href="/">
+          <span className="ml-4 text-gray-800 dark:text-gray-200 text-xl font-bold">
+            Supornchai
+          </span>
+          </Link>
         )}
       </div>
 
@@ -52,30 +61,29 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
             <a
               href="#"
               onClick={() => {
-                setActiveMenu(menu.name); // ใช้ setActiveMenu สำหรับการเปลี่ยนเนื้อหา
+                setActiveMenu(menu.name);
                 setActiveItem(menu.name);
               }}
-              className={`flex items-center ${
-                isSidebarOpen ? "justify-start" : "justify-center"
-              } px-4 py-3 rounded-md transition-all duration-300 ${
-                activeItem === menu.name
-                  ? "bg-blue-500 text-white"
-                  : "text-gray-400 hover:bg-gray-700 hover:text-white"
-              }`}
+              className={`flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
+                } px-4 py-3 rounded-md transition-all duration-300 ${activeItem === menu.name
+                  ? `bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight} text-white`
+                  : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight} hover:text-white`
+                }`}
+
             >
               <menu.icon
                 size={20}
-                className={`${
-                  activeItem === menu.name ? "text-white" : "text-gray-400"
-                }`}
+                className={`${activeItem === menu.name
+                  ? "text-white"
+                  : "text-gray-700 dark:text-gray-400"
+                  }`}
               />
               {isSidebarOpen && (
                 <span
-                  className={`ml-4 text-sm font-semibold ${
-                    activeItem === menu.name
-                      ? "text-white"
-                      : "group-hover:text-gray-300"
-                  }`}
+                  className={`ml-4 text-sm font-semibold ${activeItem === menu.name
+                    ? "text-white"
+                    : "text-gray-800 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+                    }`}
                 >
                   {menu.name}
                 </span>
@@ -85,5 +93,7 @@ export default function Sidebar({ activeMenu, setActiveMenu }) {
         ))}
       </ul>
     </div>
+
+
   );
 }
