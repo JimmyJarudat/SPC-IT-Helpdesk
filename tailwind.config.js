@@ -14,6 +14,11 @@ module.exports = {
       },
     },
   },
+  variants: {
+    extend: {
+      display: ['hover', 'group-hover'], // ต้องมี
+    },
+  },
   safelist: [
     ...["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "blue", "light-blue", 
         "cyan", "pink", "purple", "deep-purple", "indigo", "light-green", "deep-orange", "brown", 

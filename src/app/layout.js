@@ -2,6 +2,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { UserProvider } from '../contexts/UserContext';
 import { ThemeProvider } from "../contexts/ThemeContext";
+import { LanguageProvider } from "@/contexts/LanguageProvider";
 
 
 
@@ -28,9 +29,11 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <ThemeProvider>
-          <UserProvider>
-            {children}
-          </UserProvider>
+          <LanguageProvider>
+            <UserProvider>
+              {children}
+            </UserProvider>
+          </LanguageProvider>
         </ThemeProvider>
 
       </body>

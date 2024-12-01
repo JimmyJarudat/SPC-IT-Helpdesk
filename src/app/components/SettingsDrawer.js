@@ -4,16 +4,23 @@ import { FaTimes } from "react-icons/fa";
 import { useState } from "react";
 import { useTheme } from "../../contexts/ThemeContext";
 import { getColorFromTheme } from "../../utils/colorMapping";
+import { useTranslation } from "react-i18next";
 
 export default function SettingsDrawer({ isOpen, onClose }) {
+
+  const { t, i18n } = useTranslation();
   const { theme, toggleThemeMode, setNavMode, setPrimaryColor, setPrimaryWeight } = useTheme();
   const [language, setLanguage] = useState("EN");
   const [isActive, setIsActive] = useState(false);
   const [isActive1, setIsActive1] = useState(false);
-
   const [isThemeDropdownOpen, setIsThemeDropdownOpen] = useState(false);
   const [isWeightDropdownOpen, setIsWeightDropdownOpen] = useState(false);
 
+
+  const toggleLanguage = (code) => {
+    i18n.changeLanguage(code); // เปลี่ยนภาษาใน i18n
+    setLanguage(code); // อัปเดตสถานะภาษา
+  };
 
 
   const themes = [
@@ -60,7 +67,12 @@ export default function SettingsDrawer({ isOpen, onClose }) {
   const handleWeightSelect = (weight) => {
     console.log("Selected Weight:", weight);
     setPrimaryWeight(weight);
-    setBorderColor(newColor)
+
+    // Option 1: Use theme's color for border
+    const newBorderColor = theme.primaryColor && theme.primaryWeight
+      ? getColorFromTheme(theme.primaryColor, theme.primaryWeight)
+      : "border-gray-300";
+    setBorderColor(newBorderColor);
 
     // Update the primary color with the new weight
     if (theme.primaryColor) {
@@ -112,7 +124,7 @@ export default function SettingsDrawer({ isOpen, onClose }) {
     >
       <div className="flex justify-between items-center px-4 py-4 border-b dark:border-gray-700">
         <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
-          Theme Config
+          {t("themeConfig")} {/* ดึงข้อความจากไฟล์ JSON */}
         </h2>
         <button
           onClick={onClose}
@@ -125,7 +137,7 @@ export default function SettingsDrawer({ isOpen, onClose }) {
         {/* Dark Mode */}
         <div>
           <label className="flex items-center justify-between">
-            <span className="text-gray-700 dark:text-gray-300">Dark Mode</span>
+            <span className="text-gray-700 dark:text-gray-300">{t("darkMode")}</span>
             <div className="relative">
               <input
                 type="checkbox"
@@ -147,27 +159,25 @@ export default function SettingsDrawer({ isOpen, onClose }) {
 
         {/* Language */}
         <div>
-          <span className="text-gray-700 dark:text-gray-300">Language</span>
+          <span className="text-gray-700 dark:text-gray-300">{t("language")}</span>
           <ul className="mt-2 space-y-2">
             {[
-              { code: "EN", label: "English", flag: "https://flagpedia.net/data/flags/w580/us.webp" },
-              { code: "TH", label: "Thai", flag: "https://flagpedia.net/data/flags/w580/th.webp" },
+              { code: "en", label: "English", flag: "https://flagpedia.net/data/flags/w580/us.webp" },
+              { code: "th", label: "Thai", flag: "https://flagpedia.net/data/flags/w580/th.webp" },
             ].map((lang) => (
               <li
                 key={lang.code}
-                onClick={() => {
-                  setLanguage(lang.code); // เปลี่ยนภาษา
-                }}
-                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 ${language === lang.code
+                onClick={() => toggleLanguage(lang.code)}
+                className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-all duration-200 ${i18n.language === lang.code
                   ? `bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight} text-white`
                   : "hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
               >
                 <div className="flex items-center space-x-3">
                   <img src={lang.flag} alt={lang.label} className="w-6 h-6 rounded-full" />
-                  <span>{lang.label}</span>
+                  <span className=" dark:text-gray-300">{lang.label}</span>
                 </div>
-                {language === lang.code && (
+                {i18n.language === lang.code && (
                   <span className="text-green-500 dark:text-green-300">✔</span>
                 )}
               </li>
@@ -178,12 +188,12 @@ export default function SettingsDrawer({ isOpen, onClose }) {
         {/* Nav Mode */}
         <div>
           <span className="text-gray-700 dark:text-gray-300 font-semibold">
-            Nav Mode
+          {t("themeWidget")}
           </span>
           <div className="mt-4 flex space-x-4">
             {[
-              { value: "default", label: "Default" },
-              { value: "themed", label: "Themed" },
+              { value: "default", label: t("default") },
+              { value: "themed", label: t("themed") },
             ].map((mode) => (
               <label
                 key={mode.value}
@@ -199,8 +209,8 @@ export default function SettingsDrawer({ isOpen, onClose }) {
 
                     // กำหนดค่าเริ่มต้นเมื่อเลือก Default
                     if (mode.value === "default") {
-                      setPrimaryColor("bg-gray-300"); // ธีมย่อยเป็นค่าเริ่มต้น
-                      setPrimaryWeight("300");
+                      setPrimaryColor("bg-blue-500"); // ธีมย่อยเป็นค่าเริ่มต้น
+                      setPrimaryWeight("500");
                     }
                   }}
                   checked={theme.navMode === mode.value}
@@ -217,102 +227,118 @@ export default function SettingsDrawer({ isOpen, onClose }) {
           </div>
         </div>
 
-
-        {/* Theme */}
-        <div>
-          <span className="text-gray-700 dark:text-gray-300">Theme</span>
-          <div className="relative w-full">
-
-            <button
-              onClick={handleClick} // ใช้ handleClick เพียงครั้งเดียว
-              onBlur={handleBlur}
-              className={`w-full flex items-center justify-between px-4 py-2 border rounded-md focus:outline-none transition ${theme.primaryColor && theme.primaryWeight ? "" : "border-gray-300"
-                }`}
-              style={{
-                borderColor,
-              }}
-              disabled={theme.navMode === "default"} // ปิดการใช้งานเมื่อ Nav Mode เป็น Default
-            >
-              <div className="flex items-center space-x-2">
-                {/* จุดตัวอย่างสี */}
-                <div
-                  className="w-2 h-2 rounded-full"
+        {/* Theme และ Weight */}
+        {theme.navMode !== "default" && (
+          <div className="flex flex-row space-x-4 items-start">
+            {/* Theme */}
+            <div className="flex-1">
+              <span className="text-gray-700 dark:text-gray-300">{t("theme")}</span>
+              <div className="relative w-full">
+                <button
+                  onClick={handleClick}
+                  onBlur={handleBlur}
+                  className={`w-full flex items-center justify-between px-4 py-2 border rounded-md focus:outline-none transition ${theme.primaryColor && theme.primaryWeight ? "" : "border-gray-300"
+                    }`}
                   style={{
-                    backgroundColor: theme.primaryColor && theme.primaryWeight
-                      ? getColorFromTheme(theme.primaryColor, theme.primaryWeight)
-                      : "transparent",
+                    borderColor,
                   }}
-                ></div>
-                {/* ชื่อสี */}
-                <span>{theme.primaryColor ? theme.primaryColor.replace("bg-", "") : "Select Theme"}</span>
-              </div>
-              <span className="text-gray-500">▼</span>
-            </button>
-
-
-
-            {isThemeDropdownOpen && (
-              <ul className="absolute z-10 mt-2 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {themes.map((t) => (
-                  <li
-                    key={t.color}
-                    onClick={() => handleThemeSelect(t)}
-                    className={`flex items-center space-x-2 px-4 py-2 cursor-pointer transition-colors ${t.color === theme.primaryColor
-                      ? `bg-${t.color.split('-')[1]}-${theme.primaryWeight} text-white`
-                      : `hover:bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight}`
-                      }`}
-                  >
-                    {/* จุดตัวอย่างสี */}
+                  disabled={theme.navMode === "default"}
+                >
+                  <div className="flex items-center space-x-2">
                     <div
-                      className="w-4 h-4 rounded-full"
+                      className="w-2 h-2 rounded-full"
                       style={{
-                        backgroundColor: getColorFromTheme(t.color, theme.primaryWeight),
+                        backgroundColor: theme.primaryColor && theme.primaryWeight
+                          ? getColorFromTheme(theme.primaryColor, theme.primaryWeight)
+                          : "transparent",
                       }}
                     ></div>
-                    {/* ชื่อธีม */}
-                    <span>{t.name}</span>
-                  </li>
-                ))}
-              </ul>
+                    <span
+                      className="text-gray-700 dark:text-gray-300"
+                    >
+                      {theme.primaryColor
+                        ? theme.primaryColor.replace("bg-", "").split('-')[0]
+                        : "Select Theme"}
+                    </span>
 
-            )}
-          </div>
-        </div>
 
-        {/* Weight */}
-        <div>
-          <span className="text-gray-700 dark:text-gray-300">Weight</span>
-          <div className="relative w-full">
-            <button
-              onClick={handleClickW}
-              className={`w-full flex items-center justify-between px-4 py-2 border rounded-md focus:outline-none transition ${theme.primaryColor && theme.primaryWeight ? "" : "border-gray-300"
-                }`}
-              style={{
-                borderColor,
-              }}
-              disabled={theme.navMode === "default"} // ปิดการใช้งานเมื่อ Nav Mode เป็น Default
-            >
-              <span>{theme.primaryWeight || "Select Weight"}</span>
-              <span className="text-gray-500">▼</span>
-            </button>
-            {isWeightDropdownOpen && (
-              <ul className="absolute z-10 mt-2 w-full bg-white border rounded-md shadow-lg max-h-60 overflow-y-auto">
-                {weights.map((w) => (
-                  <li
-                    key={w}
-                    onClick={() => handleWeightSelect(w)}
-                    className={`px-4 py-2 cursor-pointer hover:bg-gray-100 ${w === theme.primaryWeight
-                      ? `bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight}`
-                      : ""
-                      }`}
+
+                  </div>
+                  <span className="text-gray-500">▼</span>
+                </button>
+
+                {isThemeDropdownOpen && (
+                  <ul className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {themes.map((t) => (
+                      <li
+                        key={t.color}
+                        onClick={() => handleThemeSelect(t)}
+                        className={`flex items-center space-x-2 px-4 py-2 cursor-pointer transition-colors ${t.color === theme.primaryColor
+                          ? `bg-${t.color.split('-')[1]}-${theme.primaryWeight} text-white`
+                          : "hover:bg-gray-200 dark:hover:bg-gray-700"
+                          }`}
+                      >
+                        {/* จุดสี */}
+                        <div
+                          className="w-4 h-4 rounded-full"
+                          style={{
+                            backgroundColor: getColorFromTheme(t.color, theme.primaryWeight),
+                          }}
+                        ></div>
+                        {/* ชื่อธีม */}
+                        <span className="text-gray-700 dark:text-gray-300">{t.name}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                )}
+              </div>
+            </div>
+
+            {/* Weight */}
+            <div className="flex-1">
+              <span className="text-gray-700 dark:text-gray-300">{t("weight")}</span>
+              <div className="relative w-full">
+                <button
+                  onClick={handleClickW}
+                  className={`w-full flex items-center justify-between px-4 py-2 border rounded-md focus:outline-none transition ${theme.primaryColor && theme.primaryWeight ? "" : "border-gray-300"
+                    }`}
+                  style={{
+                    borderColor,
+                  }}
+                  disabled={theme.navMode === "default"}
+                >
+                  <span
+                    className="text-gray-700 dark:text-gray-300"
                   >
-                    {w}
-                  </li>
-                ))}
-              </ul>
-            )}
+                    {theme.primaryWeight || "Select Weight"}
+                  </span>
+                  <span className="text-gray-500">▼</span>
+                </button>
+
+                {isWeightDropdownOpen && (
+                  <ul className="absolute z-10 mt-2 w-full bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                    {weights.map((w) => (
+                      <li
+                        key={w}
+                        onClick={() => handleWeightSelect(w)}
+                        className={`px-4 py-2 cursor-pointer transition-colors ${w === theme.primaryWeight
+                          ? `bg-${theme.primaryColor.split('-')[1]}-${theme.primaryWeight} text-white`
+                          : "hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
+                          }`}
+                      >
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+
+                )}
+              </div>
+            </div>
           </div>
-        </div>
+        )}
+
+
       </div>
     </div >
 

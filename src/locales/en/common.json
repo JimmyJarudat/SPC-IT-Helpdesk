@@ -1,0 +1,11 @@
+{
+    "_comment": "This file contains all translations for the English language.",
+    "themeConfig": "Theme Config",
+    "darkMode": "Dark Mode",
+    "language": "Language",
+    "themeWidget": "Theme Widget",
+    "default": "Default",
+    "themed": "Themed",
+    "theme": "Theme",
+    "weight": "Weight"
+}
