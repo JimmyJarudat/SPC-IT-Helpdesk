@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSidebarContext } from "./SidebarContext";
+import { useSidebarContext } from "../../../contexts/SidebarContext";
 import { useUser } from "@/contexts/UserContext";
 import { useRouter } from "next/navigation";
 import { FaSearch, FaBell, FaCog, FaSignOutAlt, FaUser } from "react-icons/fa";
