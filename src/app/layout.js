@@ -1,6 +1,5 @@
 'use client';
 
-import localFont from "next/font/local";
 import "./globals.css";
 import { UserProvider } from '../contexts/UserContext';
 import { ThemeProvider } from "../contexts/ThemeContext";

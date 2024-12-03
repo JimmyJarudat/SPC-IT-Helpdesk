@@ -10,12 +10,11 @@ import SettingsDrawer from "./SettingsDrawer";
 import DropdownMenu from "./DropdownMenuNav";
 
 export default function Navbar() {
-    const { toggleSidebar } = useSidebarContext();
     const { user, logout } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
-
+    const { toggleSidebar, activeMenu } = useSidebarContext();
     const router = useRouter();
 
 
@@ -31,7 +30,7 @@ export default function Navbar() {
 
     const handleLogout = () => {
         logout();
-        router.push("/login");
+        router.push("/");
     };
 
     useEffect(() => {
@@ -52,7 +51,7 @@ export default function Navbar() {
                     ☰
                 </button>
                 <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                    Dashboard
+                {activeMenu || "Dashboard"} {/* แสดงชื่อเมนูที่เลือก */}
                 </h1>
             </div>
 

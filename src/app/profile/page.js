@@ -1,175 +1,358 @@
 "use client";
 
-import { useState } from "react";
-import { useUser } from "@/contexts/UserContext";
-import { FaSave, FaTimes, FaCamera, FaCog, FaBell, FaUser, FaUserCircle, FaBuilding, FaBriefcase, FaEnvelope, FaPhone } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { FaUser, FaUserTag, FaCamera, FaEnvelope, FaPhone, FaBuilding, FaIdBadge } from "react-icons/fa";
 
 export default function ProfilePage() {
-    const { user, setUser } = useUser();
-    const [isEditing, setIsEditing] = useState(false);
-    const [showSettings, setShowSettings] = useState(false);
     const [formData, setFormData] = useState({
-        fullName: user?.fullName || "",
-        nickname: user?.nickname || "",
-        department: user?.department || "",
-        company: user?.company || "",
-        email: user?.email || "",
-        phone: user?.phone || "",
-        profileImage: user?.profileImage || "https://picsum.photos/200/300",
+        profileImage: "",
+        fullName: "",
+        nickName: "",
+        email: "",
+        phone: "",
+        company: "",
+        department: "",
+        employeeID: "",
     });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+    const [activeTab, setActiveTab] = useState("Profile");
+    const [loading, setLoading] = useState(false);
+
+    // ดึงข้อมูลผู้ใช้จาก API
+    useEffect(() => {
+        const fetchProfile = async () => {
+            setLoading(true);
+            try {
+                const response = await fetch("/api/profile/profileupdate", {
+                    method: "GET",
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setFormData(data);
+                } else {
+                    console.error("Failed to fetch profile");
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchProfile();
+    }, []);
+
+    const handleChange = (e) => {
+        setFormData({
+            ...formData,
+            [e.target.name]: e.target.value,
+        });
     };
 
-    const handleImageChange = (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setFormData({ ...formData, profileImage: event.target.result });
-            };
-            reader.readAsDataURL(file);
+    const handleUpdate = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch("/api/profile/profileupdate", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.ok) {
+                const updatedData = await response.json();
+                setFormData(updatedData);
+                alert("Profile updated successfully!");
+            } else {
+                alert("Failed to update profile");
+            }
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            alert("Error updating profile");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const handleSave = () => {
-        setUser({ ...user, ...formData });
-        setIsEditing(false);
+    const handleReset = () => {
+        // Reset ข้อมูลฟอร์ม
+        setFormData({
+            profileImage: "",
+            fullName: "",
+            nickName: "",
+            email: "",
+            phone: "",
+            company: "",
+            department: "",
+            employeeID: "",
+        });
     };
 
     return (
-        <div className="max-w-4xl mx-auto mt-12 p-8 bg-gradient-to-br from-indigo-100 via-purple-100 to-pink-100 rounded-xl shadow-lg">
-            {/* Header Section */}
-            <div className="text-center">
-                <h1 className="text-5xl font-extrabold text-purple-700">My Profile</h1>
-                <p className="text-gray-600 mt-2">
-                    Manage your personal information and account settings
-                </p>
-            </div>
+        <div className="flex-1 min-h-screen overflow-auto p-16 bg-gray-100 dark:bg-gray-800">
+            <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
-            {/* Profile Picture */}
-            <div className="flex justify-center mt-8">
-                <div className="relative group">
-                    <img
-                        src={formData.profileImage}
-                        alt="Profile"
-                        className="w-36 h-36 rounded-full border-4 border-pink-300 shadow-lg"
-                    />
-                    {isEditing && (
-                        <label className="absolute bottom-0 right-0 w-10 h-10 bg-pink-500 text-white rounded-full flex items-center justify-center cursor-pointer transition-all duration-300 hover:bg-pink-600">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                className="hidden"
-                                onChange={handleImageChange}
-                            />
-                            <FaCamera />
-                        </label>
-                    )}
-                </div>
-            </div>
-
-            {/* Profile Details */}
-            <div className="mt-10 bg-white p-6 rounded-lg shadow-md">
-                <h2 className="text-3xl font-extrabold text-purple-700 mb-6">
-                    Personal Information
-                </h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {[
-                        { label: "Full Name", name: "fullName", icon: FaUser },
-                        { label: "Nickname", name: "nickname", icon: FaUserCircle },
-                        { label: "Department", name: "department", icon: FaBuilding },
-                        { label: "Company", name: "company", icon: FaBriefcase },
-                        { label: "Email", name: "email", icon: FaEnvelope },
-                        { label: "Phone", name: "phone", icon: FaPhone },
-                    ].map((field) => (
-                        <div
-                            key={field.name}
-                            className="relative flex items-center border-b border-gray-300 py-2"
+            {/* Tabs */}
+            <div className="border-b border-gray-200 mb-6">
+                <nav className="flex space-x-4">
+                    {["Profile", "Password", "Notification", "Integration", "Billing"].map((tab) => (
+                        <button
+                            key={tab}
+                            className={`py-2 px-4 ${activeTab === tab
+                                ? "border-b-2 border-red-500 text-red-500 font-semibold"
+                                : "text-gray-600 hover:text-red-500"
+                                }`}
+                            onClick={() => setActiveTab(tab)}
                         >
-                            <field.icon className="text-gray-500 text-lg mr-3" />
-                            {isEditing ? (
+                            {tab}
+                        </button>
+                    ))}
+                </nav>
+            </div>
+
+            {/* Content */}
+            {activeTab === "Profile" && (
+                <div>
+                    <h2 className="text-xl font-semibold mb-4">General Information</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">
+                        Update your basic profile information below.
+                    </p>
+
+                    {/* Form */}
+                    <div className="space-y-6">
+                        {/* Profile Image */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Profile Image
+                            </label>
+                            <div className="col-span-9 flex items-center justify-start w-[80%] ml-auto">
+                                <div className="relative w-16 h-16 mr-4">
+                                    <img
+                                        src={formData.profileImage || "https://via.placeholder.com/150"}
+                                        alt="Profile"
+                                        className="w-16 h-16 rounded-full border border-gray-300 dark:border-gray-700 object-cover"
+                                    />
+                                    <button
+                                        className="absolute bottom-0 right-0 bg-gray-800 text-white p-1 rounded-full hover:bg-gray-600"
+                                        title="Change Image"
+                                    >
+                                        <FaCamera className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Full Name */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Full Name
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
                                 <input
                                     type="text"
-                                    name={field.name}
-                                    value={formData[field.name]}
-                                    onChange={handleInputChange}
-                                    className="flex-1 border-none focus:ring-0 focus:outline-none text-gray-800"
-                                    placeholder={`Enter ${field.label}`}
+                                    name="fullName"
+                                    value={formData.fullName || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                                 />
-                            ) : (
-                                <p className="flex-1 text-gray-800 font-medium">
-                                    {formData[field.name]}
-                                </p>
-                            )}
+                            </div>
                         </div>
-                    ))}
-                </div>
-            </div>
 
-            {/* Buttons */}
-            <div className="mt-8 flex justify-between items-center">
-                <button
-                    onClick={() => setShowSettings(!showSettings)}
-                    className="flex items-center space-x-2 px-4 py-2 bg-purple-200 text-purple-700 rounded-lg font-medium hover:bg-purple-300 transition-all duration-300"
-                >
-                    <FaCog className="inline-block" />
-                    <span>Settings</span>
-                </button>
-
-                {isEditing ? (
-                    <div className="flex space-x-4">
-                        <button
-                            onClick={() => setIsEditing(false)}
-                            className="px-6 py-2 bg-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-400 transition-all duration-300"
-                        >
-                            <FaTimes className="inline-block mr-2" />
-                            Cancel
-                        </button>
-                        <button
-                            onClick={handleSave}
-                            className="px-6 py-2 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 transition-all duration-300"
-                        >
-                            <FaSave className="inline-block mr-2" />
-                            Save
-                        </button>
-                    </div>
-                ) : (
-                    <button
-                        onClick={() => setIsEditing(true)}
-                        className="px-6 py-2 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 transition-all duration-300"
-                    >
-                        Edit Profile
-                    </button>
-                )}
-            </div>
-
-            {/* Settings Section */}
-            {showSettings && (
-                <div className="mt-6 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-lg">
-                    <h2 className="text-xl font-semibold text-purple-700 mb-4">
-                        Account Settings
-                    </h2>
-                    <div className="space-y-4">
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-700 font-medium">Enable Notifications</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" className="sr-only peer" />
-                                <div className="w-11 h-6 bg-gray-200 rounded-full peer-checked:bg-purple-500 peer-focus:ring-2 peer-focus:ring-purple-300"></div>
-                                <span className="ml-3 text-gray-600">On</span>
+                        {/* Nickname */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Nickname
                             </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaUserTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="nickName"
+                                    value={formData.nickName || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-700 font-medium">Change Password</span>
-                            <button className="px-4 py-2 bg-purple-500 text-white rounded-lg font-medium hover:bg-purple-600 transition-all duration-300">
-                                Update
-                            </button>
+
+                        {/* Email */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Email
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={formData.email || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
                         </div>
+
+                        {/* Phone */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Phone
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={formData.phone || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Company */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Company
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="company"
+                                    value={formData.company || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Department */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Department
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="department"
+                                    value={formData.department || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Employee ID */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Employee ID
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaIdBadge className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="employeeID"
+                                    value={formData.employeeID || ""}
+                                    onChange={handleChange}
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="mt-6 flex justify-end gap-4">
+                        <button
+                            onClick={() => setFormData({})}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded shadow"
+                        >
+                            Reset
+                        </button>
+                        <button
+                            onClick={handleUpdate}
+                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded shadow"
+                        >
+                            Update
+                        </button>
                     </div>
                 </div>
             )}
+
+
+            {activeTab === "Password" && (
+                <div className="text-gray-500 dark:text-gray-400 p-6">
+                    <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Change Password</h2>
+                    <form className="space-y-6">
+                        {/* Current Password */}
+                        <div>
+                            <label
+                                htmlFor="current-password"
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
+                                Current Password
+                            </label>
+                            <input
+                                type="password"
+                                id="current-password"
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter your current password"
+                                required
+                            />
+                        </div>
+
+                        {/* New Password */}
+                        <div>
+                            <label
+                                htmlFor="new-password"
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
+                                New Password
+                            </label>
+                            <input
+                                type="password"
+                                id="new-password"
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Enter your new password"
+                                required
+                            />
+                        </div>
+
+                        {/* Confirm New Password */}
+                        <div>
+                            <label
+                                htmlFor="confirm-password"
+                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                            >
+                                Confirm New Password
+                            </label>
+                            <input
+                                type="password"
+                                id="confirm-password"
+                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
+                                placeholder="Confirm your new password"
+                                required
+                            />
+                        </div>
+
+                        {/* Submit Button */}
+                        <div className="flex justify-end">
+                            <button
+                                type="submit"
+                                className="px-4 py-2 bg-blue-500 text-white font-medium rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                            >
+                                Change Password
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+
+
         </div>
     );
+
 }

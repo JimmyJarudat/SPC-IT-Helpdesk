@@ -56,23 +56,19 @@ export default function Sidebar() {
                     setActiveMenu(menu.name);
                     setActiveItem(menu.name);
                   }}
-                  className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${
-                    activeItem === menu.name
-                      ? `bg-${theme.primaryColor.split("-")[1]}-${
-                          theme.primaryWeight
-                        } text-white`
-                      : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${
-                          theme.primaryWeight
-                        } hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
-                  }`}
+                  className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
+                    } text-white`
+                    : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
+                    } hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
+                    }`}
                 >
                   <menu.icon
                     size={18}
-                    className={`${
-                      activeItem === menu.name
-                        ? "text-white"
-                        : "text-gray-700 dark:text-gray-400"
-                    }`}
+                    className={`${activeItem === menu.name
+                      ? "text-white"
+                      : "text-gray-700 dark:text-gray-400"
+                      }`}
                   />
                   <span className="ml-4 text-sm font-semibold">{menu.name}</span>
                 </a>
@@ -94,11 +90,10 @@ export default function Sidebar() {
                     setActiveMenu(menu.name);
                     setActiveItem(menu.name);
                   }}
-                  className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
-                    activeItem === menu.name
-                      ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white"
-                  }`}
+                  className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white"
+                    }`}
                 >
                   {menu.name}
                 </li>
@@ -112,15 +107,13 @@ export default function Sidebar() {
 
   return (
     <div
-      className={`bg-white-50 dark:bg-gray-900 h-screen transition-all duration-300 flex flex-col overflow-visible relative ${
-        isSidebarOpen ? "w-64" : "w-16"
-      }`}
+      className={`bg-white-50 dark:bg-gray-900 h-screen transition-all duration-300 flex flex-col overflow-visible relative ${isSidebarOpen ? "w-64" : "w-16"
+        }`}
     >
       {/* Logo Section */}
       <div
-        className={`flex items-center ${
-          isSidebarOpen ? "justify-start px-4" : "justify-center"
-        } py-6`}
+        className={`flex items-center ${isSidebarOpen ? "justify-start px-4" : "justify-center"
+          } py-6`}
       >
         <Link href="/">
           <Image
@@ -145,21 +138,26 @@ export default function Sidebar() {
         <li>
           <Link href="/dashboard">
             <div
-              className={`relative flex items-center ${
-                isSidebarOpen ? "justify-start" : "justify-center"
-              } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${
-                activeItem === "Dashboard"
+              onClick={() => {
+                setActiveMenu("Dashboard"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                setActiveItem("Dashboard");
+              }}
+              className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
+                } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "Dashboard"
                   ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
                   : `text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700`
-              }`}
+                }`}
             >
               <FaTachometerAlt
+                onClick={() => {
+                  setActiveMenu("Dashboard"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                  setActiveItem("Dashboard");
+                }}
                 size={20}
-                className={`${
-                  activeItem === "Dashboard"
-                    ? "text-white"
-                    : "text-gray-700 dark:text-gray-400"
-                }`}
+                className={`${activeItem === "Dashboard"
+                  ? "text-white"
+                  : "text-gray-700 dark:text-gray-400"
+                  }`}
               />
               {isSidebarOpen && (
                 <span className="ml-4 text-sm font-semibold">Dashboard</span>
@@ -181,22 +179,19 @@ export default function Sidebar() {
                 setActiveMenu("Dashboard1");
                 setActiveItem("JOB");
               }}
-              className={`relative flex items-center ${
-                isSidebarOpen ? "justify-start" : "justify-center"
-              } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${
-                activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
+              className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
+                } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
                   ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
                   : `text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700`
-              }`}
+                }`}
               title={isSidebarOpen ? "" : "IT - JOB"}
             >
               <FaTasks
                 size={20}
-                className={`${
-                  activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
-                    ? "text-white"
-                    : "text-gray-700 dark:text-gray-400"
-                }`}
+                className={`${activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
+                  ? "text-white"
+                  : "text-gray-700 dark:text-gray-400"
+                  }`}
               />
               {isSidebarOpen && (
                 <>

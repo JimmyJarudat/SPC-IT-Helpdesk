@@ -8,6 +8,10 @@ module.exports = {
   darkMode: "class", // หรือ 'media'
   theme: {
     extend: {
+      fontFamily: {
+        anakotmai: ['Anakotmai', 'sans-serif'],
+        sans: ["Anakotmai", "sans-serif"],
+      },
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
@@ -20,12 +24,12 @@ module.exports = {
     },
   },
   safelist: [
-    ...["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "blue", "light-blue", 
-        "cyan", "pink", "purple", "deep-purple", "indigo", "light-green", "deep-orange", "brown", 
-        "gray", "blue-gray"].flatMap((color) =>
-        ["100","200","300","400", "500", "600", "700", "800", "900"].map((weight) => `bg-${color}-${weight}`)
-    ),
+    ...["red", "orange", "amber", "yellow", "lime", "green", "emerald", "teal", "blue", "light-blue",
+      "cyan", "pink", "purple", "deep-purple", "indigo", "light-green", "deep-orange", "brown",
+      "gray", "blue-gray"].flatMap((color) =>
+        ["100", "200", "300", "400", "500", "600", "700", "800", "900"].map((weight) => `bg-${color}-${weight}`)
+      ),
   ],
-  
+
   plugins: [],
 };

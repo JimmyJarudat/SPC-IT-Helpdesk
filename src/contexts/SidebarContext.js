@@ -1,32 +1,29 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 const SidebarContext = createContext();
 
 export function SidebarProvider({ children }) {
-  const [isSidebarOpen, setSidebarOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState("Dashboard");
 
-  // ดึงค่า isSidebarOpen จาก localStorage เมื่อโหลดครั้งแรก
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedSidebarState = localStorage.getItem("isSidebarOpen");
-      if (savedSidebarState !== null) {
-        setSidebarOpen(savedSidebarState === "true");
-      }
-    }
-  }, []);
+  // อ่านสถานะจาก Cookies แทน localStorage
+  const [isSidebarOpen, setSidebarOpen] = useState(() => {
+    const savedState = Cookies.get("isSidebarOpen");
+    return savedState ? savedState === "true" : true; // ค่าเริ่มต้นเป็น true
+  });
 
-  // บันทึกค่า isSidebarOpen ลงใน localStorage ทุกครั้งที่ค่าเปลี่ยน
+  // บันทึกค่า isSidebarOpen ลงใน Cookies ทุกครั้งที่มีการเปลี่ยนแปลง
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem("isSidebarOpen", isSidebarOpen);
-    }
+    Cookies.set("isSidebarOpen", isSidebarOpen, { expires: 7 }); // เก็บไว้ 7 วัน
   }, [isSidebarOpen]);
 
   const toggleSidebar = () => {
-    setSidebarOpen((prev) => !prev);
+    setSidebarOpen((prev) => {
+      console.log("Toggling Sidebar:", !prev);
+      return !prev;
+    });
   };
 
   return (
