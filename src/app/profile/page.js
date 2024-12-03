@@ -1,9 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { FaUser, FaUserTag, FaCamera, FaEnvelope, FaPhone, FaBuilding, FaIdBadge } from "react-icons/fa";
+import { FaUser, FaKey, FaLock, FaUserTag, FaCamera, FaEnvelope, FaPhone, FaBuilding, FaIdBadge } from "react-icons/fa";
+import { useTheme } from "../../contexts/ThemeContext";
+import { getColorFromTheme } from '../../utils/colorMapping'
+
 
 export default function ProfilePage() {
+    const { theme } = useTheme();
+    const [errors, setErrors] = useState({}); // เก็บข้อผิดพลาดของฟิลด์ต่างๆ
+
     const [formData, setFormData] = useState({
         profileImage: "",
         fullName: "",
@@ -47,46 +53,81 @@ export default function ProfilePage() {
             ...formData,
             [e.target.name]: e.target.value,
         });
+        setErrors({ ...errors, [e.target.name]: "" }); // เคลียร์ข้อผิดพลาดเมื่อพิมพ์ใหม่
     };
 
     const handleUpdate = async () => {
-        setLoading(true);
+        setLoading(true); // เปิดสถานะโหลด
         try {
             const response = await fetch("/api/profile/profileupdate", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(formData), // ส่งข้อมูล formData ไปยัง API
             });
 
             if (response.ok) {
+                // รับข้อมูลที่อัปเดตจาก API
                 const updatedData = await response.json();
-                setFormData(updatedData);
+
+                // อัปเดต formData ใน state ด้วยข้อมูลใหม่
+                setFormData((prev) => ({
+                    ...prev,
+                    ...updatedData, // รวมข้อมูลใหม่เข้ากับข้อมูลเดิม
+                }));
+                setErrors({}); // เคลียร์ข้อผิดพลาด
                 alert("Profile updated successfully!");
             } else {
-                alert("Failed to update profile");
+                // กรณี API ส่งสถานะล้มเหลว
+                const errorData = await response.json();
+                setErrors({ [errorData.field]: errorData.message });
             }
         } catch (error) {
             console.error("Error updating profile:", error);
             alert("Error updating profile");
         } finally {
-            setLoading(false);
+            setLoading(false); // ปิดสถานะโหลด
         }
     };
 
-    const handleReset = () => {
-        // Reset ข้อมูลฟอร์ม
-        setFormData({
-            profileImage: "",
-            fullName: "",
-            nickName: "",
-            email: "",
-            phone: "",
-            company: "",
-            department: "",
-            employeeID: "",
-        });
+
+    const handleChangePassword = async (e) => {
+        e.preventDefault();
+
+        const currentPassword = document.getElementById("current-password").value;
+        const newPassword = document.getElementById("new-password").value;
+        const confirmPassword = document.getElementById("confirm-password").value;
+
+        if (newPassword !== confirmPassword) {
+            alert("New Password and Confirm Password do not match.");
+            return;
+        }
+
+        try {
+            const response = await fetch("/api/profile/profileupdate", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ currentPassword, newPassword }),
+            });
+
+            if (response.ok) {
+                alert("Password changed successfully!");
+
+                // ล้างค่าฟิลด์รหัสผ่านในฟอร์ม
+                document.getElementById("current-password").value = "";
+                document.getElementById("new-password").value = "";
+                document.getElementById("confirm-password").value = "";
+            } else {
+                const errorData = await response.json();
+                alert(`Failed to change password: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error("Error changing password:", error);
+            alert("Error changing password.");
+        }
     };
 
     return (
@@ -99,17 +140,21 @@ export default function ProfilePage() {
                     {["Profile", "Password", "Notification", "Integration", "Billing"].map((tab) => (
                         <button
                             key={tab}
-                            className={`py-2 px-4 ${activeTab === tab
-                                ? "border-b-2 border-red-500 text-red-500 font-semibold"
-                                : "text-gray-600 hover:text-red-500"
-                                }`}
+                            style={{
+                                color: activeTab === tab ? getColorFromTheme(theme.primaryColor, theme.primaryWeight) : "#6b7280", // สีตัวอักษร
+                                borderBottom: activeTab === tab ? `2px solid ${getColorFromTheme(theme.primaryColor, theme.primaryWeight)}` : "none", // เส้นใต้
+                            }}
+
+                            className="py-2 px-4 font-semibold hover:opacity-80"
                             onClick={() => setActiveTab(tab)}
                         >
                             {tab}
                         </button>
+
                     ))}
                 </nav>
             </div>
+
 
             {/* Content */}
             {activeTab === "Profile" && (
@@ -183,33 +228,61 @@ export default function ProfilePage() {
                                 Email
                             </label>
                             <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
-                                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                {/* ไอคอน */}
+                                <FaEnvelope
+                                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${errors.email ? "text-red-500" : "text-gray-600 dark:text-gray-300"
+                                        }`}
+                                />
+                                {/* อินพุต */}
                                 <input
                                     type="email"
                                     name="email"
                                     value={formData.email || ""}
                                     onChange={handleChange}
-                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                    className={`w-full pl-10 p-2 border ${errors.email ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+                                        } rounded dark:bg-gray-800 dark:text-gray-300`}
+                                    placeholder="Enter your email"
                                 />
+                                {/* ข้อความแจ้งเตือน */}
+                                {errors.email && (
+                                    <p className="absolute mt-2 text-sm text-red-500">
+                                        {errors.email}
+                                    </p>
+                                )}
                             </div>
                         </div>
 
+
                         {/* Phone */}
-                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                        <div className="grid grid-cols-12 items-center pb-4">
                             <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 Phone
                             </label>
                             <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
-                                <FaPhone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                {/* ไอคอน */}
+                                <FaPhone
+                                    className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${errors.phone ? "text-red-500" : "text-gray-600 dark:text-gray-300"
+                                        }`}
+                                />
+                                {/* อินพุต */}
                                 <input
                                     type="text"
                                     name="phone"
                                     value={formData.phone || ""}
                                     onChange={handleChange}
-                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                    className={`w-full pl-10 p-2 border ${errors.phone ? "border-red-500" : "border-gray-300 dark:border-gray-700"
+                                        } rounded dark:bg-gray-800 dark:text-gray-300`}
+                                    placeholder="Enter your phone number"
                                 />
+                                {/* ข้อความแจ้งเตือน */}
+                                {errors.phone && (
+                                    <p className="absolute mt-2 text-sm text-red-500">
+                                        {errors.phone}
+                                    </p>
+                                )}
                             </div>
                         </div>
+
 
                         {/* Company */}
                         <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
@@ -273,10 +346,39 @@ export default function ProfilePage() {
                         </button>
                         <button
                             onClick={handleUpdate}
-                            className="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded shadow"
+                            disabled={loading} // ปิดการใช้งานปุ่มระหว่างโหลด
+                            className={`flex items-center justify-center px-6 py-2 rounded shadow text-white ${loading
+                                    ? "bg-gray-400 cursor-not-allowed" // สีและสถานะเมื่อโหลด
+                                    : `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:opacity-80`
+                                }`}
                         >
-                            Update
+                            {loading ? (
+                                <svg
+                                    className="animate-spin h-5 w-5 mr-2 text-white"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <circle
+                                        className="opacity-25"
+                                        cx="12"
+                                        cy="12"
+                                        r="10"
+                                        stroke="currentColor"
+                                        strokeWidth="4"
+                                    ></circle>
+                                    <path
+                                        className="opacity-75"
+                                        fill="currentColor"
+                                        d="M4 12a8 8 0 018-8v8H4z"
+                                    ></path>
+                                </svg>
+                            ) : (
+                                "Update"
+                            )}
                         </button>
+
+
                     </div>
                 </div>
             )}
@@ -285,57 +387,59 @@ export default function ProfilePage() {
             {activeTab === "Password" && (
                 <div className="text-gray-500 dark:text-gray-400 p-6">
                     <h2 className="text-lg font-bold text-gray-800 dark:text-gray-200 mb-4">Change Password</h2>
-                    <form className="space-y-6">
+                    <form className="space-y-6" onSubmit={handleChangePassword}>
                         {/* Current Password */}
-                        <div>
-                            <label
-                                htmlFor="current-password"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 Current Password
                             </label>
-                            <input
-                                type="password"
-                                id="current-password"
-                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter your current password"
-                                required
-                            />
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="password"
+                                    id="current-password"
+                                    placeholder="Enter your current password"
+                                    required
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
                         </div>
 
+
                         {/* New Password */}
-                        <div>
-                            <label
-                                htmlFor="new-password"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 New Password
                             </label>
-                            <input
-                                type="password"
-                                id="new-password"
-                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Enter your new password"
-                                required
-                            />
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="password"
+                                    id="new-password"
+                                    placeholder="Enter your new password"
+                                    required
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
                         </div>
 
                         {/* Confirm New Password */}
-                        <div>
-                            <label
-                                htmlFor="confirm-password"
-                                className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-                            >
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 Confirm New Password
                             </label>
-                            <input
-                                type="password"
-                                id="confirm-password"
-                                className="mt-1 block w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="Confirm your new password"
-                                required
-                            />
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaLock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="password"
+                                    id="confirm-password"
+                                    placeholder="Confirm your new password"
+                                    required
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
                         </div>
+
 
                         {/* Submit Button */}
                         <div className="flex justify-end">
@@ -349,6 +453,7 @@ export default function ProfilePage() {
                     </form>
                 </div>
             )}
+
 
 
 

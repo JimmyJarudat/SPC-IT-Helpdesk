@@ -3,6 +3,7 @@ import dbConnect from "../../../../../lib/dbConnect";
 import User from "../../../../models/User";
 
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 const JWT_SECRET = process.env.JWT_SECRET; // JWT Secret จาก .env.local
 
@@ -59,26 +60,69 @@ export async function PUT(req) {
     }
 
     // ถอดรหัส Token
-    const decoded = jwt.verify(token, JWT_SECRET);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (error) {
+      console.error("Invalid token:", error);
+      return NextResponse.json({ message: "Invalid token" }, { status: 403 });
+    }
+
     const username = decoded.username;
 
     // รับข้อมูลใหม่จาก body
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error("Invalid request body:", error);
+      return NextResponse.json({ message: "Invalid request body" }, { status: 400 });
+    }
 
-    // อัปเดตข้อมูลในฐานข้อมูล
-    const updatedUser = await User.findOneAndUpdate(
-      { username },
-      { $set: body },
-      { new: true }
-    );
+    const { currentPassword, newPassword, ...otherUpdates } = body;
 
-    if (!updatedUser) {
+    // ค้นหาผู้ใช้จากฐานข้อมูล
+    const user = await User.findOne({ username });
+    if (!user) {
       return NextResponse.json({ message: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(updatedUser, { status: 200 });
+    // กรณีเปลี่ยนรหัสผ่าน
+    if (currentPassword && newPassword) {
+      const isMatch = await bcrypt.compare(currentPassword, user.password);
+      if (!isMatch) {
+        return NextResponse.json({ message: "Current password is incorrect" }, { status: 403 });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      user.password = hashedPassword; // อัปเดตฟิลด์รหัสผ่าน
+      console.log("Password updated in memory"); // Debug ตรวจสอบว่าอัปเดตสำเร็จ
+    }
+
+    // อัปเดตข้อมูลอื่นๆ (เช่น ชื่อ, อีเมล)
+    if (Object.keys(otherUpdates).length > 0) {
+      Object.assign(user, otherUpdates);
+    }
+
+    
+
+    // บันทึกข้อมูลในฐานข้อมูล
+    const savedUser = await user.save();
+    console.log("Saved user:", savedUser); // Debug ดูข้อมูลที่บันทึกสำเร็จ
+
+    
+    
+
+    return NextResponse.json({ message: "Profile updated successfully" }, { status: 200 });
   } catch (error) {
-    console.error("Error updating profile:", error.message);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
-  }
+    console.error("Error updating profile:", error);
+
+    // ส่งข้อความแสดงข้อผิดพลาดที่มีรายละเอียดเพิ่มเติมในโหมดพัฒนา
+    const isDev = process.env.NODE_ENV === "development"; // ตรวจสอบว่าอยู่ในโหมดพัฒนา
+    const message = isDev ? error.message : "Internal server error";
+
+    return NextResponse.json({ message }, { status: 500 });
 }
+
+}
+
