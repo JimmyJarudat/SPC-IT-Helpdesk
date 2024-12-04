@@ -104,14 +104,14 @@ export async function PUT(req) {
       Object.assign(user, otherUpdates);
     }
 
-    
+
 
     // บันทึกข้อมูลในฐานข้อมูล
     const savedUser = await user.save();
     console.log("Saved user:", savedUser); // Debug ดูข้อมูลที่บันทึกสำเร็จ
 
-    
-    
+
+
 
     return NextResponse.json({ message: "Profile updated successfully" }, { status: 200 });
   } catch (error) {
@@ -122,7 +122,47 @@ export async function PUT(req) {
     const message = isDev ? error.message : "Internal server error";
 
     return NextResponse.json({ message }, { status: 500 });
-}
+  }
 
 }
+
+// GET Method: ดึงข้อมูลผู้ใช้ตามเบอร์โทรศัพท์
+export async function POST(req) {
+  try {
+    await dbConnect();
+    console.log("Database connected");
+
+    const { phone } = await req.json();
+    console.log("Phone received:", phone);
+
+    if (!phone) {
+      return NextResponse.json({ message: "Phone number is required" }, { status: 400 });
+    }
+
+    const user = await User.findOne({ phone });
+    console.log("User found:", user);
+
+    if (!user) {
+      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        company: user.company,
+        location: user.location,
+        computerName: user.computerName,
+        fullName: user.fullName,
+        nickName:user.nickName,
+        position: user.position,
+        department: user.department,
+        division: user.division,
+      },
+    }, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching user by phone:", error.message);
+    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+  }
+}
+
 

@@ -36,7 +36,7 @@ export default function Sidebar() {
   }, [pathname]);
 
   const jobMenuItems = [
-    { name: "Create Task", icon: FaPlus },
+    { name: "Create JOB", icon: FaPlus },
     { name: "Pending Tasks", icon: FaClipboardList },
     { name: "In Progress Tasks", icon: FaTasks },
     { name: "Completed Tasks", icon: FaCheckCircle },
@@ -136,11 +136,11 @@ export default function Sidebar() {
       {/* Dashboard Menu */}
       <ul className="flex flex-col space-y-2">
         <li>
-          <Link href="/dashboard">
+          <Link href="/overview">
             <div
               onClick={() => {
-                setActiveMenu("Dashboard"); // อัปเดต activeMenu สำหรับเมนูหลัก
-                setActiveItem("Dashboard");
+                setActiveMenu("Overview"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                setActiveItem("Overview");
               }}
               className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
                 } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "Dashboard"
@@ -150,8 +150,8 @@ export default function Sidebar() {
             >
               <FaTachometerAlt
                 onClick={() => {
-                  setActiveMenu("Dashboard"); // อัปเดต activeMenu สำหรับเมนูหลัก
-                  setActiveItem("Dashboard");
+                  setActiveMenu("Overview"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                  setActiveItem("Overview");
                 }}
                 size={20}
                 className={`${activeItem === "Dashboard"

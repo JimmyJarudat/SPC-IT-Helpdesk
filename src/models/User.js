@@ -25,14 +25,18 @@ const UserSchema = new mongoose.Schema(
     },
     employeeID: { type: String, required: true, unique: true },
     nickName: { type: String, trim: true },
-    phone: {
-      type: String,
-      match: [/^\d{10}$/, 'Invalid phone number'], // ตัวอย่าง: เบอร์โทร 10 หลัก
-      trim: true
-    },
+    phone: { type: String, required: true, trim: true },
     profileImage: { type: String, },
+    computerName: { type: String, },
+    position: { type: String, },
+    department: { type: String, },
+    division: { type: String, },
+    location: { type: String, },
+
+
   },
   { timestamps: true }
+
 );
 
 

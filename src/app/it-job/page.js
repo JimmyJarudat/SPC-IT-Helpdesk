@@ -6,6 +6,8 @@ import Sidebar from "../components/DashboardLayout/Sidebar";
 import Navbar from "../components/DashboardLayout/Navbar";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useSidebarContext } from "../../contexts/SidebarContext";
+import CreateTaskContent from "../components/ItJob/CreateTaskContent";
+
 
 const itJob = () => {
   const { activeMenu } = useSidebarContext();
@@ -15,7 +17,7 @@ const itJob = () => {
     switch (activeMenu) {
       case "Dashboard1":
         return <DashboardContent />;
-      case "Create Task":
+      case "Create JOB":
         return <CreateTaskContent />;
       case "Pending Tasks":
         return <PendingTasksContent />;
@@ -32,11 +34,16 @@ const itJob = () => {
   
   return (
     <div className="flex h-screen">
-      <div className="flex-1 p-4">{renderContent()}</div>
+      <div className="flex-1">{renderContent()}</div>
     </div>
   );
   
 };
+
+
+
+
+
 
 
 /* Content Components */
@@ -48,7 +55,7 @@ const DashboardContent = () => {
   
     return (
       <div
-      className=''
+      className='flex-1 min-h-screen overflow-auto p-16 bg-gray-100 dark:bg-gray-800'
       >
         <div className="p-6 rounded-lg shadow-lg bg-white dark:bg-gray-700 text-center">
           <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-4">
@@ -74,18 +81,7 @@ const DashboardContent = () => {
       </div>
     );
   };
-  
-  
-  
-  
-  
-  const CreateTaskContent = () => (
-    <div>
-      <h1 className="text-2xl font-bold">Create Task</h1>
-      <p>Here you can create a new task.</p>
-    </div>
-  );
-  
+   
   const PendingTasksContent = () => (
     <div>
       <h1 className="text-2xl font-bold">Pending Tasks</h1>

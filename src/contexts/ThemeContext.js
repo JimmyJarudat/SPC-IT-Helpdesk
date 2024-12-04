@@ -4,28 +4,37 @@ import { createContext, useContext, useState, useEffect } from "react";
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState(() => {
-    // โหลดค่าจาก Local Storage เมื่อเริ่มต้น
-    const savedTheme = localStorage.getItem('appTheme');
-    return savedTheme 
-      ? JSON.parse(savedTheme) 
-      : {
-          mode: "light", 
-          navMode: "default", 
-          primaryColor: "bg-blue",
-          primaryWeight: "500",
-        };
-  });
+
+  const defaultTheme = {
+    mode: "light",
+    navMode: "default",
+    primaryColor: "bg-blue",
+    primaryWeight: "500",
+  };
+
+  const [theme, setTheme] = useState(defaultTheme);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      // โหลดค่าจาก Local Storage หลังจาก Component ถูก Mount
+      const savedTheme = localStorage.getItem("appTheme");
+      if (savedTheme) {
+        setTheme(JSON.parse(savedTheme));
+      }
+    }
+  }, []);
 
   // เมื่อ theme เปลี่ยน ให้บันทึกลง Local Storage
   useEffect(() => {
-    localStorage.setItem('appTheme', JSON.stringify(theme));
-    document.body.classList.toggle("dark", theme.mode === "dark");
+    if (typeof window !== "undefined") {
+      localStorage.setItem('appTheme', JSON.stringify(theme));
+      document.body.classList.toggle("dark", theme.mode === "dark");
+    }
   }, [theme]);
 
   const toggleThemeMode = () => {
     setTheme((prevTheme) => ({
-      ...prevTheme, 
+      ...prevTheme,
       mode: prevTheme.mode === "dark" ? "light" : "dark"
     }));
   };
