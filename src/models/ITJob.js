@@ -3,8 +3,8 @@ const mongoose = require('mongoose');
 const ITJobSchema = new mongoose.Schema({
     jobID: { type: String, required: true }, // รหัสงาน
     createdAt: { type: Date, default: Date.now }, // วันที่สร้าง
-    company: { type: String, required: true }, // บริษัท
-    location: { type: String, required: true }, // สถานที่
+    company: { type: String }, // บริษัท
+    location: { type: String }, // สถานที่
     computerName: { type: String }, // ชื่อคอมพิวเตอร์
     position: { type: String }, // ตำแหน่ง
     fullName: { type: String, required: true }, // ชื่อเต็ม
@@ -24,6 +24,7 @@ const ITJobSchema = new mongoose.Schema({
         replacementDate: { type: Date }, // วันที่เปลี่ยน
         reason: { type: String } // เหตุผล
     }, // รายละเอียดการเปลี่ยนอุปกรณ์
+    tag: { type: String },
 
     nameJob_owner: { type: String }, // ชื่อผู้รับผิดชอบงาน
     nicknameJob_owner: { type: String }, // ชื่อเล่นผู้รับผิดชอบงาน
@@ -31,14 +32,17 @@ const ITJobSchema = new mongoose.Schema({
     phoneJob_owner: { type: String }, // เบอร์โทรผู้รับผิดชอบงาน
     dateAcepJob_owner: { type: Date }, // วันที่ยอมรับงาน
 
-    status: { type: String, enum: ['pending', 'in_progress', 'completed', , 'completed_Late',], default: 'pending' }, // สถานะ
+    status: { type: String, enum: ['pending', 'in_progress', 'completed', 'completed_Late',], default: 'pending' }, // สถานะ
     processTime: { type: Number }, // เวลาที่ใช้ในการดำเนินการ (หน่วย: ชั่วโมง)
     completionDate: { type: Date }, // วันที่เสร็จสิ้น
     dueDate: { type: Date }, // กำหนดส่ง
     progress: { type: Number, min: 0, max: 100 } // ความคืบหน้า (เปอร์เซ็นต์)
 },
-    { collection: 'it-job' },
-    { timestamps: true }); 
+
+    {
+        collection: 'it-job', // Specify the collection name
+        timestamps: true // Enable automatic timestamps
+    });
 
 module.exports = mongoose.model('ITJob', ITJobSchema);
 

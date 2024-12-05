@@ -139,30 +139,34 @@ export async function POST(req) {
       return NextResponse.json({ message: "Phone number is required" }, { status: 400 });
     }
 
-    const user = await User.findOne({ phone });
-    console.log("User found:", user);
+    // ค้นหาผู้ใช้ทั้งหมดที่มีเบอร์โทรนี้
+    const users = await User.find({ phone });
+    console.log("Users found:", users);
 
-    if (!user) {
-      return NextResponse.json({ message: "User not found" }, { status: 404 });
+    if (users.length === 0) {
+      return NextResponse.json({ message: "No users found for this phone number" }, { status: 404 });
     }
 
+    // ส่งข้อมูลผู้ใช้ทั้งหมดกลับไป
     return NextResponse.json({
       success: true,
-      data: {
+      data: users.map((user) => ({
         company: user.company,
         location: user.location,
+        email: user.email,
         computerName: user.computerName,
         fullName: user.fullName,
-        nickName:user.nickName,
+        nickName: user.nickName,
         position: user.position,
         department: user.department,
         division: user.division,
-      },
+      })),
     }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching user by phone:", error.message);
+    console.error("Error fetching users by phone:", error.message);
     return NextResponse.json({ message: "Internal server error" }, { status: 500 });
   }
 }
+
 
 

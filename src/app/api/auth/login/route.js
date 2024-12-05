@@ -35,6 +35,10 @@ export async function POST(req) {
       employeeID: user.employeeID,
       nickName: user.nickName,
       phone: user.phone,
+      computerName: user.computerName,
+      division: user.division,
+      position: user.position,
+      location: user.location,
       profileImage: user.profileImage,
 
     }, JWT_SECRET, { expiresIn: '7d' }); // Token มีอายุ 7 วัน

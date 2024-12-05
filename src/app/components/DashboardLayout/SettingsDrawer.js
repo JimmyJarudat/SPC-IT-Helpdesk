@@ -36,9 +36,7 @@ export default function SettingsDrawer({ isOpen, onClose }) {
     { name: "Yellow", color: "bg-yellow" },
     { name: "Amber", color: "bg-amber" },
     { name: "Orange", color: "bg-orange" },
-    { name: "Brown", color: "bg-brown" },
     { name: "Gray", color: "bg-gray" },
-    { name: "Blue Gray", color: "bg-blue-gray" },
   ];
 
   const weights = ["100", "200", "300", "400", "500", "600", "700", "800", "900"];
