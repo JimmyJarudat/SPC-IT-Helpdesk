@@ -183,28 +183,70 @@ const AllTasksContent = () => {
                     <table className="table-auto w-full border-collapse border border-gray-300">
                         <thead>
                             <tr className="bg-gray-200">
-                                <th className="border border-gray-300 px-4 py-2">ลำดับ</th>
-                                <th className="border border-gray-300 px-4 py-2">เลขที่งาน</th>
-                                <th className="border border-gray-300 px-4 py-2">ชื่องาน</th>
-                                <th className="border border-gray-300 px-4 py-2">สถานะ</th>
-                                <th className="border border-gray-300 px-4 py-2">วันที่สร้าง</th>
+                                <th className="border border-gray-300  py-2">ลำดับ</th>
+                                <th className="border border-gray-300  py-2">เลขที่งาน</th>
+                                <th className="border border-gray-300  py-2">ชื่องาน</th>
+                                <th className="border border-gray-300  py-2">ประเภท</th>
+                                <th className="border border-gray-300  py-2">วันที่แจ้ง</th>
+                                <th className="border border-gray-300  py-2">ผู้แจ้ง</th>
+                                <th className="border border-gray-300  py-2">เวลาที่เสร็จ</th>
+                                <th className="border border-gray-300  py-2">สถานะ</th>
+                                <th className="border border-gray-300  py-2">เวลาที่ใช้ทำงาน</th>
+                                <th className="border border-gray-300  py-2">รายละเอียด</th>
                             </tr>
                         </thead>
                         <tbody>
                             {tasks.map((task, index) => (
                                 <tr key={task.jobID}>
                                     {/* คำนวณลำดับโดยบวกกับ (currentPage - 1) * itemsPerPage */}
-                                    <td className="border border-gray-300 px-4 py-2">
+                                    <td className="border border-gray-300  text-center align-middle">
                                         {index + 1 + (currentPage - 1) * itemsPerPage}
                                     </td>
-                                    <td className="border border-gray-300 px-4 py-2">{task.jobID}</td>
-                                    <td className="border border-gray-300 px-4 py-2">{task.jobName}</td>
-                                    <td className="border border-gray-300 px-4 py-2">{task.status}</td>
-                                    <td className="border border-gray-300 px-4 py-2">
+                                    <td className="border border-gray-300  text-center align-middle">{task.jobID}</td>
+                                    <td className="border border-gray-300 py-2 px-2">
+                                        {task.jobName.length > 20 ? task.jobName.substring(0, 20) + "..." : task.jobName}
+                                    </td>
+
+                                    <td className="border border-gray-300  text-center align-middle">{task.category
+                                    }</td>
+                                    <td className="border border-gray-300  text-center align-middle">
                                         {new Date(task.createdAt).toLocaleDateString()}
                                     </td>
+                                    <td className="border border-gray-300 px-4 text-center align-middle">{task.nickName}</td>
+                                    <td className="border border-gray-300 px-4 text-center align-middle">
+                                        {task.completionDate ? new Date(task.completionDate).toLocaleDateString() : null}
+                                    </td>
+                                    <td className="border border-gray-300  text-center align-middle">
+                                        <span
+                                            className={`${task.status === "pending"
+                                                ? "text-yellow-600"
+                                                : task.status === "in_progress"
+                                                    ? "text-blue-600"
+                                                    : task.status === "completed"
+                                                        ? "text-green-600"
+                                                        : task.status === "completed_Late"
+                                                            ? "text-red-600"
+                                                            : "text-gray-600"
+                                                }`}
+                                        >
+                                            {task.status === "pending" && "รอดำเนินการ"}
+                                            {task.status === "in_progress" && "กำลังดำเนินการ"}
+                                            {task.status === "completed" && "เสร็จสิ้น"}
+                                            {task.status === "completed_Late" && "เสร็จล่าช้า"}
+                                        </span>
+                                    </td>
+
+
+                                    <td className="border border-gray-300  text-center align-middle">{task.processTime}</td>
+                                    <td className="border border-gray-300  text-center align-middle">
+                                        <button>
+                                            Click
+                                        </button>
+                                    </td>
+
                                 </tr>
                             ))}
+
                         </tbody>
 
                     </table>
