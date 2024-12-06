@@ -33,7 +33,7 @@ const ITJobSchema = new mongoose.Schema({
     dateAcepJob_owner: { type: Date }, // วันที่ยอมรับงาน
 
     status: { type: String, enum: ['pending', 'in_progress', 'completed', 'completed_Late',], default: 'pending' }, // สถานะ
-    processTime: { type: Number }, // เวลาที่ใช้ในการดำเนินการ (หน่วย: ชั่วโมง)
+    processTime: { type: String }, // เวลาที่ใช้ในการดำเนินการ (หน่วย: ชั่วโมง)
     completionDate: { type: Date }, // วันที่เสร็จสิ้น
     dueDate: { type: Date }, // กำหนดส่ง
     progress: { type: Number, min: 0, max: 100 } // ความคืบหน้า (เปอร์เซ็นต์)

@@ -16,7 +16,7 @@ const AllTasksContent = () => {
     const itemsPerPage = 20; // จำนวนรายการต่อหน้า
 
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortOption, setSortOption] = useState("asc");
+    const [sortOption, setSortOption] = useState("desc");
     const [totalFiltered, setTotalFiltered] = useState(0);
 
 
@@ -120,17 +120,28 @@ const AllTasksContent = () => {
                 />
                 <DatePicker
                     selected={filters.startDate ? new Date(filters.startDate) : null}
-                    onChange={(date) => handleFilterChange({ target: { name: "startDate", value: date?.toISOString() } })}
+                    onChange={(date) =>
+                        handleFilterChange({
+                            target: { name: "startDate", value: date?.toISOString() },
+                        })
+                    }
                     placeholderText="📅 วันที่เริ่มต้น"
                     dateFormat="dd/MM/yyyy"
                     className="w-full border px-4 py-2 rounded-lg dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                    showYearDropdown // แสดง Dropdown เลือกปี
+                    yearDropdownItemNumber={24} // จำนวนปีที่แสดง (เช่น 15 ปี)
+                    scrollableYearDropdown // เพิ่มการเลื่อน Dropdown ปี
                 />
+
                 <DatePicker
                     selected={filters.endDate ? new Date(filters.endDate) : null}
                     onChange={(date) => handleFilterChange({ target: { name: "endDate", value: date?.toISOString() } })}
                     placeholderText="📅 วันที่สิ้นสุด"
                     dateFormat="dd/MM/yyyy"
                     className="w-full border px-4 py-2 rounded-lg dark:bg-gray-800 dark:text-white dark:border-gray-600"
+                    showYearDropdown // แสดง Dropdown เลือกปี
+                    yearDropdownItemNumber={24} // จำนวนปีที่แสดง (เช่น 15 ปี)
+                    scrollableYearDropdown // เพิ่มการเลื่อน Dropdown ปี
                 />
                 <select
                     // value={categoryFilter}
@@ -197,6 +208,7 @@ const AllTasksContent = () => {
                         </thead>
                         <tbody>
                             {tasks.map((task, index) => (
+
                                 <tr key={task.jobID}>
                                     {/* คำนวณลำดับโดยบวกกับ (currentPage - 1) * itemsPerPage */}
                                     <td className="border border-gray-300  text-center align-middle">
@@ -237,7 +249,15 @@ const AllTasksContent = () => {
                                     </td>
 
 
-                                    <td className="border border-gray-300  text-center align-middle">{task.processTime}</td>
+                                    <td className="border border-gray-300 text-center align-middle">
+                                        {task.processTime && typeof task.processTime === "string" && task.processTime.trim() !== "" && task.processTime !== "No field"
+                                            ? task.processTime
+                                            : ""}
+                                    </td>
+
+
+
+
                                     <td className="border border-gray-300  text-center align-middle">
                                         <button>
                                             Click
@@ -252,22 +272,102 @@ const AllTasksContent = () => {
                     </table>
 
                     {/* Pagination */}
-                    <div className="flex justify-center mt-4 space-x-2">
-                        {Array.from({ length: pagination.totalPages }, (_, i) => (
-                            <button
-                                key={i + 1}
-                                onClick={() => handlePageChange(i + 1)}
-                                className={`px-3 py-1 rounded ${currentPage === i + 1 ? "bg-blue-500 text-white" : "bg-gray-200"
-                                    } hover:bg-blue-400`}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
+                    <div className="flex flex-col items-center space-y-2">
+                        {/* Pagination Buttons */}
+                        <div className="flex justify-center mt-4 space-x-2">
+                            {(() => {
+                                const totalPages = pagination.totalPages; // จำนวนหน้าทั้งหมด
+                                const maxVisiblePages = 10; // จำนวนหน้าที่แสดงก่อนจุดไข่ปลา
+                                const trailingPages = 3; // จำนวนหน้าที่แสดงหลังจุดไข่ปลา
+                                const pages = [];
+
+                                if (totalPages <= maxVisiblePages + trailingPages) {
+                                    // กรณีที่จำนวนหน้าน้อยกว่าหรือเท่ากับ 10 + 3
+                                    for (let i = 1; i <= totalPages; i++) {
+                                        pages.push(i);
+                                    }
+                                } else {
+                                    if (currentPage <= maxVisiblePages - 2) {
+                                        // กรณีที่อยู่ในหน้าแรก ๆ
+                                        for (let i = 1; i <= maxVisiblePages; i++) {
+                                            pages.push(i);
+                                        }
+                                        pages.push("...");
+                                        for (let i = totalPages - trailingPages + 1; i <= totalPages; i++) {
+                                            pages.push(i);
+                                        }
+                                    } else if (currentPage > totalPages - trailingPages) {
+                                        // กรณีที่อยู่ในหน้าสุดท้าย
+                                        for (let i = 1; i <= 3; i++) {
+                                            pages.push(i);
+                                        }
+                                        pages.push("...");
+                                        for (let i = totalPages - maxVisiblePages + 1; i <= totalPages; i++) {
+                                            pages.push(i);
+                                        }
+                                    } else {
+                                        // กรณีที่อยู่ตรงกลาง
+                                        for (let i = 1; i <= 3; i++) {
+                                            pages.push(i);
+                                        }
+                                        pages.push("...");
+                                        for (let i = currentPage - 4; i <= currentPage + 2; i++) {
+                                            pages.push(i);
+                                        }
+                                        pages.push("...");
+                                        for (let i = totalPages - trailingPages + 1; i <= totalPages; i++) {
+                                            pages.push(i);
+                                        }
+                                    }
+                                }
+
+                                return pages.map((page, index) => (
+                                    <button
+                                        key={index}
+                                        onClick={() => typeof page === "number" && handlePageChange(page)}
+                                        className={`px-3 py-1 rounded ${currentPage === page ? "bg-blue-500 text-white" : "bg-gray-200"
+                                            } hover:bg-blue-400`}
+                                        disabled={page === "..."}>
+                                        {page}
+                                    </button>
+                                ));
+                            })()}
+                        </div>
+
+                        {/* Input for Jumping to Specific Page */}
+                        {/* Conditional Input for Jumping to Specific Page */}
+                        {pagination.totalPages > 50 && (
+                            <div className="flex items-center space-x-2 mt-2">
+                                <span>ไปยังหน้า:</span>
+                                <input
+                                    type="number"
+                                    min="1"
+                                    max={pagination.totalPages}
+                                    placeholder={`1 - ${pagination.totalPages}`}
+                                    className="w-20 border px-3 py-1 rounded-lg text-center"
+                                    onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                            const page = Number(e.target.value);
+                                            if (page >= 1 && page <= pagination.totalPages) {
+                                                handlePageChange(page);
+                                            }
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
 
 
 
+
+
+
+
+                    <div>
+                        <h1>33</h1>
+                    </div>
 
 
                 </div>
