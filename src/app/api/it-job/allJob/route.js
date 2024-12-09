@@ -11,14 +11,17 @@ export async function GET(req) {
         const limit = parseInt(searchParams.get("limit")) || 20;
         const startDate = searchParams.get("startDate");
         const endDate = searchParams.get("endDate");
+        const category = searchParams.get("category");
+        const status = searchParams.get("status");
 
+       
         let filter = {};
 
         if (startDate && endDate) {
-            filter.createdAt = {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
-            };
+            const startOfDay = new Date(`${startDate}T00:00:00.000Z`);
+            const endOfDay = new Date(`${endDate}T23:59:59.999Z`);
+            filter.createdAt = { $gte: startOfDay, $lte: endOfDay };
+
 
         } else {
             const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
@@ -35,17 +38,23 @@ export async function GET(req) {
                 { nickName: { $regex: search, $options: "i" } },
             ];
         }
-        const sort = searchParams.get("sort") || "asc"; // รับค่าการจัดเรียง
-        const sortOption = sort === "asc" ? 1 : -1;
 
-     
+        if (category) {
+            filter.category = category; // เพิ่มตัวกรองหมวดหมู่
+        }
+        if (status) {
+            filter.status = status; // เพิ่มตัวกรองสถานะ
+        }
 
+        
+        const sortField = searchParams.get("sortField") || "createdAt"; // ค่า default เป็น createdAt
+        const sortOrder = searchParams.get("sort") === "asc" ? 1 : -1;
         const skip = (page - 1) * limit; // คำนวณ skip ที่ถูกต้อง
         const jobs = await ITJob.find(filter)
-        .sort({ jobID: sortOption })
-            .skip(skip).
-            limit(limit)
-            .sort({ createdAt: -1 });
+            .sort({ [sortField]: sortOrder }) // เรียงลำดับตามฟิลด์ไดนามิก
+            .skip(skip)
+            .limit(limit);
+
 
         const totalFiltered = await ITJob.countDocuments(filter);
         const totalPages = Math.ceil(totalFiltered / limit);

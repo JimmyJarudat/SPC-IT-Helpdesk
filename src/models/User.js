@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    fullName: { type: String, required: true, trim: true },
+    fullName: { type: String},
     username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
     role: {
@@ -15,17 +15,16 @@ const UserSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'], // จำกัดค่า role_status
       default: 'pending'
     },
-    company: { type: String, required: true, trim: true },
-    department: { type: String, required: true, trim: true },
+    company: { type: String },
+    department: { type: String},
     email: {
       type: String,
-      required: true,
       unique: true,
       match: [/.+@.+\..+/, 'Invalid email format'] // ตรวจสอบรูปแบบอีเมล
     },
-    employeeID: { type: String, required: true, unique: true },
-    nickName: { type: String, trim: true },
-    phone: { type: String, required: true, trim: true },
+    employeeID: { type: String },
+    nickName: { type: String},
+    phone: { type: String},
     profileImage: { type: String, },
     computerName: { type: String, },
     position: { type: String, },

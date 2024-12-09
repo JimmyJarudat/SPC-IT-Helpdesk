@@ -9,7 +9,7 @@ export default function middleware(req) {
 
   //console.log("Token from Middleware:", token); // Debug Token
 
-  if (url.pathname.startsWith("/dashboard")) {
+  if (url.pathname.startsWith("/overview")) {
     if (!token) {
       //console.log("No token found. Redirecting to /login...");
       url.pathname = "/login";
@@ -30,5 +30,5 @@ export default function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*"], // ใช้ Middleware กับ path ที่ระบุ
+  matcher: ["/overview/:path*"], // ใช้ Middleware กับ path ที่ระบุ
 };

@@ -169,4 +169,4 @@ const CompletedTasksContent = () => {
 
 
 
-export default withAuth(itJob, ["admin", "user"]);
+export default withAuth(itJob, ["admin"]);

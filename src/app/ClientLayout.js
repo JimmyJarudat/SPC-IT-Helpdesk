@@ -9,9 +9,11 @@ import { LanguageProvider } from "@/contexts/LanguageProvider";
 import { SidebarProvider } from "../contexts/SidebarContext";
 import { useUser } from "@/contexts/UserContext";
 import DashboardLayout from "./components/DashboardLayout/DashboardLayout";
-import LoginPage from "./login/page";
 import { usePathname } from "next/navigation";
+import { LoadingProvider } from "@/contexts/LoadingContext";
+import PendingApproval from "./pendingApproval/page";
 
+const LoginPage = dynamic(() => import("./login/page"), { ssr: false });
 
 function AppStack({ children }) {
     return (
@@ -23,11 +25,13 @@ function AppStack({ children }) {
     );
 }
 
-function AuthStack() {
-    return (
-        <LoginPage />
-    );
+function AuthStack({ roleStatus }) {
+    if (roleStatus === "pending") {
+        return <PendingApproval />;
+    }
+    return <LoginPage />;
 }
+
 
 function RootLayoutContent({ children }) {
     const { user } = useUser();
@@ -51,13 +55,16 @@ function RootLayoutContent({ children }) {
     return <AppStack>{children}</AppStack>;
 }
 
+
 export default function ClientLayout({ children }) {
     return (
         <ThemeProvider>
             <LanguageProvider>
-                <UserProvider>
-                    <RootLayoutContent>{children}</RootLayoutContent>
-                </UserProvider>
+                <LoadingProvider>
+                    <UserProvider>
+                        <RootLayoutContent>{children}</RootLayoutContent>
+                    </UserProvider>
+                </LoadingProvider>
             </LanguageProvider>
         </ThemeProvider>
     );

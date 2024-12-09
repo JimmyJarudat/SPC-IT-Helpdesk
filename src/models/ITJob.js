@@ -36,7 +36,8 @@ const ITJobSchema = new mongoose.Schema({
     processTime: { type: String }, // เวลาที่ใช้ในการดำเนินการ (หน่วย: ชั่วโมง)
     completionDate: { type: Date }, // วันที่เสร็จสิ้น
     dueDate: { type: Date }, // กำหนดส่ง
-    progress: { type: Number, min: 0, max: 100 } // ความคืบหน้า (เปอร์เซ็นต์)
+    progress: { type: Number, min: 0, max: 100 }, // ความคืบหน้า (เปอร์เซ็นต์)
+    attachment:{ type: String }
 },
 
     {

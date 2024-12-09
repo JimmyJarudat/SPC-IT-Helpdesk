@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { FaUser, FaKey, FaLock, FaUserTag, FaCamera, FaEnvelope, FaPhone, FaBuilding, FaIdBadge } from "react-icons/fa";
 import { useTheme } from "../../contexts/ThemeContext";
 import { getColorFromTheme } from '../../utils/colorMapping'
+import { useUser } from "@/contexts/UserContext";
 
 
 export default function ProfilePage() {
+    const { user } = useUser();
     const { theme } = useTheme();
     const [errors, setErrors] = useState({}); // เก็บข้อผิดพลาดของฟิลด์ต่างๆ
-
+    const [selectedFile, setSelectedFile] = useState(null);
+    const [previewImage, setPreviewImage] = useState(null);
+    const [uploadStatus, setUploadStatus] = useState("");
+    const [uploadedFilePath, setUploadedFilePath] = useState("");
+    console.log("พาท", uploadedFilePath)
     const [formData, setFormData] = useState({
-        profileImage: "",
         fullName: "",
         nickName: "",
         email: "",
@@ -19,6 +24,7 @@ export default function ProfilePage() {
         company: "",
         department: "",
         employeeID: "",
+        profileImage: uploadedFilePath,
     });
 
     const [activeTab, setActiveTab] = useState("Profile");
@@ -130,6 +136,52 @@ export default function ProfilePage() {
         }
     };
 
+
+
+
+
+
+
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setSelectedFile(file);
+            setPreviewImage(URL.createObjectURL(file)); // Show preview
+
+            const formData = new FormData();
+            formData.append("profileImage", file);
+            formData.append("username", user.username); // Add username to FormData
+
+            try {
+                const response = await fetch("/api/profile/uploadImage", {
+                    method: "POST",
+                    body: formData,
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setUploadStatus("Image uploaded successfully!");
+                    setUploadedFilePath(data.filePath); // Update the file path in state
+
+                    // Update formData with the new profileImage path
+                    setFormData((prev) => ({
+                        ...prev,
+                        profileImage: data.filePath, // Update the profileImage with the file path
+                    }));
+                } else {
+                    const errorData = await response.json();
+                    setUploadStatus(`Failed to upload image: ${errorData.message}`);
+                }
+            } catch (error) {
+                console.error("Upload Error:", error);
+                setUploadStatus("Error uploading image.");
+            }
+        }
+    };
+
+
+
     return (
         <div className="flex-1 min-h-screen overflow-auto p-16 bg-gray-100 dark:bg-gray-800">
             <h1 className="text-2xl font-bold mb-6">Settings</h1>
@@ -173,18 +225,35 @@ export default function ProfilePage() {
                             </label>
                             <div className="col-span-9 flex items-center justify-start w-[80%] ml-auto">
                                 <div className="relative w-16 h-16 mr-4">
+                                    {/* Profile image preview */}
                                     <img
-                                        src={formData.profileImage || "https://via.placeholder.com/150"}
+                                        src={formData.profileImage || previewImage || "https://via.placeholder.com/150"}
                                         alt="Profile"
                                         className="w-16 h-16 rounded-full border border-gray-300 dark:border-gray-700 object-cover"
                                     />
+
+                                    {/* Button to trigger file input */}
                                     <button
                                         className="absolute bottom-0 right-0 bg-gray-800 text-white p-1 rounded-full hover:bg-gray-600"
                                         title="Change Image"
+                                        onClick={() => document.getElementById("profileImageInput").click()}
                                     >
                                         <FaCamera className="w-4 h-4" />
                                     </button>
+
+                                    {/* Hidden file input */}
+                                    <input
+                                        id="profileImageInput"
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+
+                                        onChange={handleFileChange}
+                                    />
                                 </div>
+
+                                {/* Upload button */}
+                                {uploadStatus && <p className="mt-2">{uploadStatus}</p>}
                             </div>
                         </div>
 
@@ -348,8 +417,8 @@ export default function ProfilePage() {
                             onClick={handleUpdate}
                             disabled={loading} // ปิดการใช้งานปุ่มระหว่างโหลด
                             className={`flex items-center justify-center px-6 py-2 rounded shadow text-white ${loading
-                                    ? "bg-gray-400 cursor-not-allowed" // สีและสถานะเมื่อโหลด
-                                    : `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:opacity-80`
+                                ? "bg-gray-400 cursor-not-allowed" // สีและสถานะเมื่อโหลด
+                                : `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:opacity-80`
                                 }`}
                         >
                             {loading ? (

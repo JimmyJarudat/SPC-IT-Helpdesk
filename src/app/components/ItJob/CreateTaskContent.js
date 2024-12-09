@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { getColorFromTheme } from '@/utils/colorMapping';
 import { useTheme } from "@/contexts/ThemeContext";
 import { useUser } from "@/contexts/UserContext";
@@ -26,6 +26,7 @@ const CreateJob = () => {
     const [isModalOpen, setIsModalOpen] = useState(false); // สถานะของ Modal
     const [isAlertOpen, setIsAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState("");
+    const fileInputRef = useRef(null);
 
     const [errors, setErrors] = useState({
         phoneNumber: false,
@@ -139,14 +140,10 @@ const CreateJob = () => {
         setErrors(newErrors);
         setErrorMessages(newErrorMessages);
 
-        if (newErrors.phoneNumber || newErrors.jobName || newErrors.category) {
+        if (Object.values(newErrors).some((error) => error)) {
             setAlertMessage("กรุณากรอกข้อมูลให้ครบถ้วน");
             setIsAlertOpen(true);
             return;
-        }
-
-        if (newErrors.phoneNumber || newErrors.jobName || newErrors.category || newErrors.tag) {
-            return; // หยุดการทำงานถ้ามีข้อผิดพลาด
         }
 
         // คำนวณ dueDate
@@ -160,27 +157,37 @@ const CreateJob = () => {
             dueDate.setHours(dueDate.getHours() + 72);
         }
 
-        const payload = {
-            jobID: `IT${new Date().toISOString().slice(0, 7).replace("-", "")}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`,
-            phoneNumber,
-            email: userInfo?.email || "",
-            status,
-            nameJob_owner: user.fullName,
-            nicknameJob_owner: user.nickName,
-            emailJob_owner: user.email || null,
-            phoneJob_owner: user.phone,
-            dateAcepJob_owner: new Date().toISOString(),
-            dueDate: dueDate.toISOString(),
-            tag: "",
-            ...userInfo,
-            ...jobDetails,
-        };
+        // สร้าง FormData
+        const formData = new FormData();
+        formData.append("phoneNumber", phoneNumber);
+        formData.append("email", userInfo?.email || "");
+        formData.append("status", status);
+        formData.append("nameJob_owner", user.fullName);
+        formData.append("nicknameJob_owner", user.nickName);
+        formData.append("emailJob_owner", user.email || null);
+        formData.append("phoneJob_owner", user.phone);
+        formData.append("dateAcepJob_owner", new Date().toISOString());
+        formData.append("dueDate", dueDate.toISOString());
+        formData.append("tag", jobDetails.tag);
+        formData.append("jobName", jobDetails.jobName);
+        formData.append("jobDescription", jobDetails.jobDescription);
+        formData.append("category", jobDetails.category);
+
+        // เพิ่มข้อมูลผู้ใช้งาน
+        Object.entries(userInfo || {}).forEach(([key, value]) => {
+            formData.append(key, value);
+        });
+
+        // เพิ่มรูปภาพถ้ามี
+        const imageInput = document.querySelector('input[type="file"]');
+        if (imageInput?.files?.length > 0) {
+            formData.append("image", imageInput.files[0]);
+        }
 
         try {
             const response = await fetch("/api/it-job/createJob", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
+                body: formData,
             });
 
             const result = await response.json();
@@ -199,6 +206,7 @@ const CreateJob = () => {
             alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล");
         }
     };
+
 
 
     useEffect(() => {
@@ -227,7 +235,7 @@ const CreateJob = () => {
     }, []);
 
 
-        
+
 
     const handleCloseModal = () => {
         setSelectedTask(null);
@@ -239,13 +247,13 @@ const CreateJob = () => {
         setSelectedTask(null);
         setIsModalOpenDaily(false);
     };
-   
+
     const handleOpenModalDaily = (task) => {
         setSelectedTask(task);
         setIsModalOpenDaily(true);
         setIsModalOpen(false); // ปิด Modal อื่น
     };
-    
+
     const handleConfirmJobDaily = async (taskName) => {
         if (selectedTask) {
             try {
@@ -257,40 +265,34 @@ const CreateJob = () => {
                     0,  // นาที
                     0,  // วินาที
                     0   // มิลลิวินาที
-                ).toISOString()
+                ).toISOString();
+
+                const formData = new FormData();
+                formData.append("jobName", selectedTask.name);
+                formData.append("phoneNumber", user.phone);
+                formData.append("email", user.email);
+                formData.append("status", "in_progress");
+                formData.append("nameJob_owner", user.fullName);
+                formData.append("nicknameJob_owner", user.nickName);
+                formData.append("emailJob_owner", user.email || null);
+                formData.append("phoneJob_owner", user.phone);
+                formData.append("dateAcepJob_owner", new Date().toISOString());
+                formData.append("createdAt", new Date().toISOString());
+                formData.append("company", user.company);
+                formData.append("location", user.location);
+                formData.append("computerName", user.computerName);
+                formData.append("position", user.position);
+                formData.append("fullName", user.fullName || "");
+                formData.append("nickName", user.nickName || "");
+                formData.append("division", user.division || "");
+                formData.append("department", user.department || "");
+                formData.append("category", "daily");
+                formData.append("dueDate", dueDate);
+                formData.append("tag", "งานประจำ");
 
                 const response = await fetch("/api/it-job/createJob", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        jobName: selectedTask.name,
-                        jobID: `IT${new Date().toISOString().slice(0, 7).replace("-", "")}${Math.floor(Math.random() * 1000).toString().padStart(3, "0")}`,
-
-                        phoneNumber: user.phone,
-                        email: user.email,
-                        status: "in_progress",
-                        nameJob_owner: user.fullName,
-                        nicknameJob_owner: user.nickName,
-                        emailJob_owner: user.email || null,
-                        phoneJob_owner: user.phone,
-                        dateAcepJob_owner: new Date().toISOString(),
-
-                        createdAt: new Date().toISOString(),
-                        company: user.company,
-                        location: user.location,
-                        computerName: user.computerName,
-                        position: user.position,
-                        fullName: user.fullName || "",
-                        nickName: user.nickName || "",
-                        division: user.division || "",
-                        department: user.department || "",
-                        category: "daily",
-                        dueDate,
-                        tag: "งานประจำ",
-
-                    }),
+                    body: formData, // ใช้ FormData
                 });
 
                 const result = await response.json();
@@ -310,6 +312,7 @@ const CreateJob = () => {
             }
         }
     };
+
 
     return (
         <div className="flex-1 min-h-screen overflow-auto bg-gray-100 dark:bg-gray-900 p-6">
@@ -562,6 +565,67 @@ const CreateJob = () => {
                                 )}
                             </div>
                         )}
+                        {/* อัพโหลดรูปภาพ */}
+                        <div className="flex flex-col md:col-span-2">
+                            <label className="text-gray-700 dark:text-gray-300 font-medium mb-2">
+                                อัพโหลดรูปภาพ
+                            </label>
+                            <div className="relative">
+                                <label
+                                    htmlFor="fileUpload"
+                                    className="inline-block bg-blue-500 text-white font-medium px-4 py-2 rounded-lg cursor-pointer shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-500"
+                                >
+                                    เลือกรูปภาพ
+                                </label>
+                                <input
+                                    id="fileUpload"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = () => {
+                                                setJobDetails({
+                                                    ...jobDetails,
+                                                    image: reader.result,
+                                                    fileName: file.name,
+                                                });
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                    className="hidden" // ซ่อน input file
+                                />
+                                {jobDetails.fileName && (
+                                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                        ชื่อไฟล์: {jobDetails.fileName}
+                                    </p>
+                                )}
+                            </div>
+                            {jobDetails.image && (
+                                <div className="mt-4 relative group">
+                                    <img
+                                        src={jobDetails.image}
+                                        alt="Uploaded Preview"
+                                        className="max-w-[300px] h-auto border border-gray-300 dark:border-gray-700 rounded-lg shadow-md"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            setJobDetails({ ...jobDetails, image: null, fileName: null });
+                                            const fileInput = document.getElementById("fileUpload");
+                                            if (fileInput) fileInput.value = ""; // รีเซ็ต input file
+                                        }}
+                                        className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                                    >
+                                        ลบรูป
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+
+
 
 
 

@@ -1,81 +1,55 @@
-'use client'
+"use client";
 import React, { useState } from "react";
-import { FaDesktop } from "react-icons/fa";
 
-const departments = [
-    {
-        name: "แผนกไอที",
-        machines: ["IT-2001", "IT-2002"],
-    },
-    {
-        name: "แผนกบุคคล",
-        machines: ["HR-2001", "HR-2002"],
-    },
-    {
-        name: "แผนกบัญชี",
-        machines: ["AC-2001", "AC-2002"],
-    },
-];
+const ProfileImageUpload = () => {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState("");
 
-const PMComputer = () => {
-    const [expanded, setExpanded] = useState(null);
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    setSelectedFile(file);
+    setPreviewImage(URL.createObjectURL(file));
+  };
 
-    const toggleAccordion = (index) => {
-        setExpanded(expanded === index ? null : index);
-    };
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      alert("Please select a file first!");
+      return;
+    }
 
-    return (
-        <div className="flex-1 min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
-            <div className="max-w-5xl mx-auto bg-white shadow-md rounded-lg p-6 dark:bg-gray-800">
-                {/* Header */}
-                <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-6 text-center">
-                    PM คอมพิวเตอร์
-                </h2>
-                <p className="text-gray-600 dark:text-gray-300 text-center mb-8">
-                    รายการเครื่องคอมพิวเตอร์ที่ต้องทำ PM แยกตามแผนก
-                </p>
+    const formData = new FormData();
+    formData.append("profileImage", selectedFile);
 
-                {/* Accordion for Departments */}
-                <div className="space-y-4">
-                    {departments.map((department, index) => (
-                        <div
-                            key={index}
-                            className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg shadow-md transition-all"
-                        >
-                            {/* Accordion Header */}
-                            <div
-                                className="flex items-center justify-between cursor-pointer"
-                                onClick={() => toggleAccordion(index)}
-                            >
-                                <h3 className="text-lg font-bold text-gray-800 dark:text-white">
-                                    {department.name}
-                                </h3>
-                                <span className="text-gray-600 dark:text-gray-300">
-                                    {expanded === index ? "▲" : "▼"}
-                                </span>
-                            </div>
+    try {
+      const response = await fetch("/api/profile/uploadImage", {
+        method: "POST",
+        body: formData,
+      });
 
-                            {/* Accordion Content */}
-                            {expanded === index && (
-                                <div className="mt-4 space-y-2">
-                                    {department.machines.map((machine, machineIndex) => (
-                                        <div
-                                            key={machineIndex}
-                                            className="bg-gray-100 dark:bg-gray-600 p-2 rounded-md shadow-sm"
-                                        >
-                                            <div className="text-gray-800 dark:text-white">
-                                                {machine}
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
+      if (response.ok) {
+        const data = await response.json();
+        setUploadStatus("Image uploaded successfully!");
+        console.log("Uploaded file path:", data.filePath);
+      } else {
+        const errorData = await response.json();
+        setUploadStatus(`Failed to upload image: ${errorData.message}`);
+      }
+    } catch (error) {
+      console.error("Upload Error:", error);
+      setUploadStatus("Error uploading image.");
+    }
+  };
+
+  return (
+    <div>
+      <h1>Upload Profile Image</h1>
+      {previewImage && <img src={previewImage} alt="Preview" width="100" />}
+      <input type="file" accept="image/*" onChange={handleFileChange} />
+      <button onClick={handleUpload}>Upload</button>
+      {uploadStatus && <p>{uploadStatus}</p>}
+    </div>
+  );
 };
 
-export default PMComputer;
+export default ProfileImageUpload;

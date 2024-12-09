@@ -4,6 +4,9 @@ const nextConfig = {
     images: {
         domains: ['picsum.photos'], // เพิ่มโดเมนของภาพที่อนุญาต
     },
+    api: {
+        bodyParser: false,
+      },
 };
 
 export default nextConfig;

@@ -13,17 +13,72 @@ const PendingTasksContent = () => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [selectedTagCategory, setSelectedTagCategory] = useState("");
 
-
     const tagCategories = {
-        program: ["Microsoft Office", "Power BI", "SAP"],
-        device: ["คอมพิวเตอร์", "เครื่องปริ้น", "Router"],
-        user: ["สร้างบัญชีใหม่", "รีเซ็ตรหัสผ่าน", "อบรมผู้ใช้งาน"],
+        program: [
+            "โปรแกรม Mac5",
+            "โปรแกรม Enpro",
+            "อ่อนนุชรีโมทไม่ได้",
+            "Microsoft Office",
+            "โปรแกรม QAS",
+            "โปรแกรม Google Chrome",
+            "โปรแกรม STB",
+            "โปรแกรม Line PC",
+            "Windows หลุด Activate",
+            "โปรแกรม Edoc/Sos",
+            "Windows มีปัญหา",
+            "โปรแกรม Express",
+            "โปรแกรม IPMsg",
+            "Network Drive ไม่ได้",
+            "โปรแกรม HRSPC ไม่ได้ / Payday",
+            "Software Printer",
+            "โปรแกรม SFs",
+            "โปรแกรม DCs",
+            "ปัญหาจอดำไม่ขึ้น Wallpaper",
+            "สั่งปริ้นแล้ว Windows ค้าง",
+            "ปัญหาโปรแกรม TMS",
+            "ปัญหาโปรแกรม ZOOM / โปรแกรมดูกล้อง / อื่นๆ",
+        ],
+        device: [
+            "ปริ้นเตอร์ / เครื่องถ่ายเอกสาร",
+            "คอมพิวเตอร์",
+            "โทรศัพท์",
+            "กล้องวงจรปิด",
+            "เมาส์",
+            "คีย์บอร์ด",
+            "หน้าจอ Monitor",
+            "กล้องถ่ายรูป / ถ่ายวิดีโอ / Webcam",
+            "Router WiFi / Switch Hub / Lan",
+            "UPS เครื่องสำรองไฟ",
+            "Power Supply คอมพิวเตอร์",
+            "เครื่องเสียง / Projector / เครื่องสแกนนิ้ว / อื่นๆ",
+        ],
+        user: [
+            "ปัญหางานปริ้นเตอร์ / ปริ้นไม่ได้",
+            "ปัญหาเกี่ยวกับการใช้งาน Email",
+            "โปรแกรมหายจากหน้าจอคอมพิวเตอร์",
+            "ต้องการใช้งานโปรแกรม / ติดตั้งโปรแกรม",
+            "ปัญหาการใช้งาน Line PC",
+            "ขอใช้ WiFi บริษัท",
+            "ปัญหากล้องวงจรปิด",
+            "Scan เอกสารไม่ได้",
+            "ติดตั้งฟอนต์",
+            "ปัญหาเกี่ยวกับการใช้งาน Microsoft Office",
+            "PR อุปกรณ์ / ค่าบริการ",
+            "งาน Support โปรแกรม",
+            "ยืมอุปกรณ์ของแผนก IT",
+            "เซตคอมพิวเตอร์ / อุปกรณ์",
+            "ปัญหาด้านเน็ตเวิร์ค",
+            "เปิดเครื่องเสียง / เซตระบบห้องประชุม",
+            "แก้ไขเอกสาร / ขอไฟล์เสียง / ขอไฟล์วีดีโอ / กู้คืนไฟล์",
+            "ขอใช้งาน WIFI หอพัก / ยกเลิก WIFI หอพัก",
+            "ขอรหัสเข้าใช้งานคอมพิวเตอร์ / ขอรหัสเข้าใช้โปรแกรม",
+            "ติดตั้งและย้ายอุปกรณ์",
+            "ปัญหาการใช้งานโทรศัพท์",
+            "Support การใช้งานโปรแกรม Power BI",
+            "งาน Support ทั่วไป",
+        ],
         daily: ["ตรวจเช็คระบบ", "บำรุงรักษา", "รายงานผล"],
     };
-
-
-
-
 
 
     useEffect(() => {
@@ -241,17 +296,37 @@ const PendingTasksContent = () => {
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>เลขที่งาน:</strong> {selectedTask.jobID || '-'}
                                     </p>
-                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
-                                        <strong>ชื่องาน:</strong> {selectedTask.jobName || '-'}
-                                    </p>
-                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
-                                        <strong>ประเภทงาน:</strong> {selectedTask.category || '-'}
-                                    </p>
+                                    <div className="mb-2">
+                                        <label className="text-md text-gray-600 dark:text-gray-400">
+                                            <strong>ชื่องาน:</strong>
+                                        </label>
+                                        <input
+                                            type="text"
+                                            value={selectedTask.jobName || ''}
+                                            onChange={(e) => setSelectedTask({ ...selectedTask, jobName: e.target.value })}
+                                            className="w-full mt-1 p-2 border rounded dark:bg-gray-700 dark:text-gray-300"
+                                        />
+                                    </div>
+                                    <div className="mb-2">
+                                        <label className="text-md text-gray-600 dark:text-gray-400">
+                                            <strong>ประเภทงาน:</strong>
+                                        </label>
+                                        <select
+                                            value={selectedTask.category || ''}
+                                            onChange={(e) => setSelectedTask({ ...selectedTask, category: e.target.value })}
+                                            className="w-full mt-1 p-2 border rounded dark:bg-gray-700 dark:text-gray-300"
+                                        >
+                                            <option value="">-- เลือกประเภทงาน --</option>
+                                            <option value="device">อุปกรณ์</option>
+                                            <option value="program">โปรแกรม</option>
+                                            <option value="user">ผู้ใช้งาน</option>
+                                      
 
+                                        </select>
+                                    </div>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>สถานะ:</strong> {selectedTask.status || '-'}
                                     </p>
-
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>วันที่สร้าง:</strong>{' '}
                                         {selectedTask.createdAt
@@ -266,7 +341,6 @@ const PendingTasksContent = () => {
                                             })} น.`
                                             : '-'}
                                     </p>
-
                                 </div>
 
                                 {/* Column 2 */}
@@ -289,41 +363,17 @@ const PendingTasksContent = () => {
                                 </div>
                             </div>
 
-                            {/* แสดงแท็ก */}
-                            <div className="mt-4">
-                                <label className="block text-gray-700 dark:text-gray-300 mb-2">
-                                    เลือกแท็กที่เกี่ยวข้อง
-                                </label>
-                                <select
-                                    value={selectedTag}
-                                    onChange={(e) => {
-                                        setSelectedTag(e.target.value);
-                                        setIsTagError(false); // ล้างข้อผิดพลาดเมื่อเลือกแท็ก
-                                    }}
-                                    className={`w-full p-2 border rounded dark:bg-gray-700 dark:text-gray-300 ${isTagError ? "border-red-500" : "border-gray-300"
-                                        }`}
-                                >
-                                    <option value="">-- เลือกแท็ก --</option>
-                                    {tagCategories[selectedTask.category]?.map((tag, index) => (
-                                        <option key={index} value={tag}>
-                                            {tag}
-                                        </option>
-                                    ))}
-                                </select>
-                                {isTagError && (
-                                    <p className="text-red-500 text-sm mt-1">กรุณาเลือกแท็ก</p>
-                                )}
-                            </div>
-
-
                             {/* รายละเอียดเพิ่มเติม */}
                             <div className="mt-4">
-                                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                                <label className="block text-sm text-gray-600 dark:text-gray-400 mb-2">
                                     <strong>รายละเอียด:</strong>
-                                </p>
-                                <div className="bg-gray-100 dark:bg-gray-700 p-3 rounded text-sm text-gray-800 dark:text-gray-300">
-                                    {selectedTask.jobDescription || 'ไม่มีรายละเอียดเพิ่มเติม'}
-                                </div>
+                                </label>
+                                <textarea
+                                    value={selectedTask.jobDescription || ''}
+                                    onChange={(e) => setSelectedTask({ ...selectedTask, jobDescription: e.target.value })}
+                                    className="w-full p-3 border rounded dark:bg-gray-700 dark:text-gray-300"
+                                    rows="4"
+                                ></textarea>
                             </div>
 
                             {/* Buttons */}
@@ -338,12 +388,13 @@ const PendingTasksContent = () => {
                                     onClick={() => handleAcceptTask(selectedTask)}
                                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
                                 >
-                                    รับงาน
+                                    บันทึก
                                 </button>
                             </div>
                         </div>
                     </div>
                 )}
+
 
                 {selectedTagCategory && (
                     <div className="mb-4">

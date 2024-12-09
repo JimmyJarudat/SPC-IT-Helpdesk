@@ -93,9 +93,10 @@ export default function Navbar() {
                         <Image
                             src={user?.profileImage || "https://picsum.photos/200/300"}
                             alt="User Avatar"
-                            className="w-8 h-8 rounded-full"
-                            width={32}
-                            height={32}
+                            className="w-10 h-10 rounded-full"
+                            width={100}  // อัตราส่วนที่ต้องการ
+                            height={100} // อัตราส่วนที่ต้องการ
+                            quality={100} // ตั้งค่าให้ความละเอียดสูงสุด
                         />
                         <div className="hidden sm:block">
                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
