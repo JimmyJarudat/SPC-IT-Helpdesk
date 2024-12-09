@@ -52,17 +52,92 @@ const CreateJob = () => {
 
     useEffect(() => {
         if (jobDetails.category === "device") {
-            setTags(["คอมพิวเตอร์", "ปริ้นเตอร์", "เครือข่าย", "กล้องวงจรปิด"]);
+            setTags([
+                "ปริ้นเตอร์ / เครื่องถ่ายเอกสาร",
+                "คอมพิวเตอร์",
+                "โทรศัพท์",
+                "กล้องวงจรปิด",
+                "เมาส์",
+                "คีย์บอร์ด",
+                "หน้าจอ Monitor",
+                "กล้องถ่ายรูป / ถ่ายวิดีโอ / Webcam",
+                "Router WiFi / Switch Hub / Lan",
+                "UPS เครื่องสำรองไฟ",
+                "Power Supply คอมพิวเตอร์",
+                "เครื่องเสียง / Projector / เครื่องสแกนนิ้ว / อื่นๆ",
+            ]);
         } else if (jobDetails.category === "program") {
-            setTags(["Microsoft Office", "Power BI", "โปรแกรมบัญชี", "โปรแกรมออกแบบ"]);
+            setTags([
+                "โปรแกรม Mac5",
+                "โปรแกรม Enpro",
+                "อ่อนนุชรีโมทไม่ได้",
+                "Microsoft Office",
+                "โปรแกรม QAS",
+                "โปรแกรม Google Chrome",
+                "โปรแกรม STB",
+                "โปรแกรม Line PC",
+                "Windows หลุด Activate",
+                "โปรแกรม Edoc/Sos",
+                "Windows มีปัญหา",
+                "โปรแกรม Express",
+                "โปรแกรม IPMsg",
+                "Network Drive ไม่ได้",
+                "โปรแกรม HRSPC ไม่ได้ / Payday",
+                "Software Printer",
+                "โปรแกรม SFs",
+                "โปรแกรม DCs",
+                "ปัญหาจอดำไม่ขึ้น Wallpaper",
+                "สั่งปริ้นแล้ว Windows ค้าง",
+                "ปัญหาโปรแกรม TMS",
+                "ปัญหาโปรแกรม ZOOM / โปรแกรมดูกล้อง / อื่นๆ",
+            ]);
         } else if (jobDetails.category === "user") {
-            setTags(["สร้างบัญชีใหม่", "รีเซ็ตรหัสผ่าน", "จัดการสิทธิ์", "อบรมผู้ใช้งาน"]);
-        } else {
+            setTags([
+                "ปัญหางานปริ้นเตอร์ / ปริ้นไม่ได้",
+                "ปัญหาเกี่ยวกับการใช้งาน Email",
+                "โปรแกรมหายจากหน้าจอคอมพิวเตอร์",
+                "ต้องการใช้งานโปรแกรม / ติดตั้งโปรแกรม",
+                "ปัญหาการใช้งาน Line PC",
+                "ขอใช้ WiFi บริษัท",
+                "ปัญหากล้องวงจรปิด",
+                "Scan เอกสารไม่ได้",
+                "ติดตั้งฟอนต์",
+                "ปัญหาเกี่ยวกับการใช้งาน Microsoft Office",
+                "PR อุปกรณ์ / ค่าบริการ",
+                "งาน Support โปรแกรม",
+                "ยืมอุปกรณ์ของแผนก IT",
+                "เซตคอมพิวเตอร์ / อุปกรณ์",
+                "ปัญหาด้านเน็ตเวิร์ค",
+                "เปิดเครื่องเสียง / เซตระบบห้องประชุม",
+                "แก้ไขเอกสาร / ขอไฟล์เสียง / ขอไฟล์วีดีโอ / กู้คืนไฟล์",
+                "ขอใช้งาน WIFI หอพัก / ยกเลิก WIFI หอพัก",
+                "ขอรหัสเข้าใช้งานคอมพิวเตอร์ / ขอรหัสเข้าใช้โปรแกรม",
+                "ติดตั้งและย้ายอุปกรณ์",
+                "ปัญหาการใช้งานโทรศัพท์",
+                "Support การใช้งานโปรแกรม Power BI",
+                "งาน Support ทั่วไป",
+            ]);
+        } else if (jobDetails.category === "daily") {
+            setTags([
+                "งานประจำ",
+            ])
+        }
+        else if (jobDetails.category === "pm") {
+            setTags([
+                "PM คอมพิวเตอร์",
+                "PM Server",
+                "PM เครื่องปริ้น",
+                "PM กล้องวงจรปิด",
+                "PM เครื่องสำรองไฟ",
+                "PM Network"
+            ])
+        }
+
+        else {
             setTags([]);
         }
         setSelectedTag(""); // รีเซ็ตค่าแท็กเมื่อเปลี่ยนประเภทงาน
     }, [jobDetails.category]);
-
 
     const getIconForTask = (taskName) => {
         switch (taskName) {
@@ -155,7 +230,36 @@ const CreateJob = () => {
             dueDate.setHours(dueDate.getHours() + 4);
         } else if (jobDetails.category === "device") {
             dueDate.setHours(dueDate.getHours() + 72);
+        } else if (jobDetails.category === "daily") {
+            dueDate.setHours(dueDate.getHours() + 8);
+        } else if (jobDetails.category === "pm") {
+            // กำหนดชั่วโมงตามแท็ก
+            switch (jobDetails.tag) {
+                case "PM คอมพิวเตอร์":
+                    dueDate.setHours(dueDate.getHours() + 3);
+                    break;
+                case "PM Server":
+                    dueDate.setHours(dueDate.getHours() + 2);
+                    break;
+                case "PM เครื่องปริ้น":
+                    dueDate.setHours(dueDate.getHours() + 1); // เพิ่ม 1 ชั่วโมง
+                    dueDate.setMinutes(dueDate.getMinutes() + 30); // เพิ่ม 30 นาที
+                    break;
+                case "PM กล้องวงจรปิด":
+                    dueDate.setHours(dueDate.getHours() + 6);
+                    break;
+                case "PM เครื่องสำรองไฟ":
+                    dueDate.setHours(dueDate.getHours() + 2);
+                    break;
+                case "PM Network":
+                    dueDate.setHours(dueDate.getHours() + 2);
+                    break;
+                default:
+                    dueDate.setHours(dueDate.getHours() + 2); // ค่าเริ่มต้น
+                    break;
+            }
         }
+
 
         // สร้าง FormData
         const formData = new FormData();
@@ -207,8 +311,6 @@ const CreateJob = () => {
         }
     };
 
-
-
     useEffect(() => {
         const fetchTasks = async () => {
             try {
@@ -233,15 +335,6 @@ const CreateJob = () => {
 
         fetchTasks();
     }, []);
-
-
-
-
-    const handleCloseModal = () => {
-        setSelectedTask(null);
-        setIsModalOpen(false);
-    };
-
 
     const handleCloseModalDaily = () => {
         setSelectedTask(null);
@@ -526,6 +619,32 @@ const CreateJob = () => {
                                         }}
                                     />
                                     <span className="text-gray-700 dark:text-gray-300">ผู้ใช้งาน</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                    <input
+                                        type="radio"
+                                        name="category"
+                                        value="daily"
+                                        onChange={(e) => {
+                                            setJobDetails({ ...jobDetails, category: e.target.value });
+                                            setErrors({ ...errors, category: false });
+                                            setErrorMessages({ ...errorMessages, category: "" });
+                                        }}
+                                    />
+                                    <span className="text-gray-700 dark:text-gray-300">งานประจำ</span>
+                                </label>
+                                <label className="flex items-center space-x-2">
+                                    <input
+                                        type="radio"
+                                        name="category"
+                                        value="pm"
+                                        onChange={(e) => {
+                                            setJobDetails({ ...jobDetails, category: e.target.value });
+                                            setErrors({ ...errors, category: false });
+                                            setErrorMessages({ ...errorMessages, category: "" });
+                                        }}
+                                    />
+                                    <span className="text-gray-700 dark:text-gray-300">PM</span>
                                 </label>
                             </div>
                             {errors.category && (

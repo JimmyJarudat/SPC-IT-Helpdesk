@@ -80,27 +80,26 @@ const PendingTasksContent = () => {
         daily: ["ตรวจเช็คระบบ", "บำรุงรักษา", "รายงานผล"],
     };
 
+    const fetchPendingTasks = async () => {
+        showLoading();
+        try {
+            const response = await fetch('/api/it-job/pendingJob'); // ปรับ endpoint ให้ตรงกับ API ของคุณ
+            const data = await response.json();
+            if (data.success && data.data.length > 0) {
+                setPendingTasks(data.data);
+            } else {
+                console.warn('No pending jobs found.');
+                setPendingTasks([]); // ตั้งเป็น array ว่างหากไม่มีงาน
+            }
+        } catch (error) {
+            console.error('Error fetching pending tasks:', error);
+            setPendingTasks([]); // Default to an empty array on error
+        } finally {
+            hideLoading();
+        }
+    };
 
     useEffect(() => {
-        const fetchPendingTasks = async () => {
-            showLoading();
-            try {
-                const response = await fetch('/api/it-job/pendingJob'); // ปรับ endpoint ให้ตรงกับ API ของคุณ
-                const data = await response.json();
-                if (data.success && data.data.length > 0) {
-                    setPendingTasks(data.data);
-                } else {
-                    console.warn('No pending jobs found.');
-                    setPendingTasks([]); // ตั้งเป็น array ว่างหากไม่มีงาน
-                }
-            } catch (error) {
-                console.error('Error fetching pending tasks:', error);
-                setPendingTasks([]); // Default to an empty array on error
-            } finally {
-                hideLoading();
-            }
-        };
-
         fetchPendingTasks();
     }, []);
 
@@ -179,9 +178,18 @@ const PendingTasksContent = () => {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
             <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-6 dark:bg-gray-800">
-                <h1 className="text-4xl font-bold text-gray-800 dark:text-white mb-8 text-center">
-                    งานรอดำเนินการ
-                </h1>
+                <div className="mb-8 text-center">
+                    <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white mb-4">
+                        งานรอดำเนินการ
+                    </h1>
+                    <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
+                        จำนวนงานทั้งหมด: <span className="text-blue-600 dark:text-blue-400">{pendingTasks.length}</span> งาน
+                    </p>
+                    <div className="mt-4">
+                        <div className="h-1 w-32 bg-gradient-to-r from-blue-500 to-purple-500 mx-auto rounded-full"></div>
+                    </div>
+                </div>
+
 
                 {Array.isArray(pendingTasks) && pendingTasks.length > 0 ? (
                     <div className="overflow-x-auto">
@@ -274,9 +282,33 @@ const PendingTasksContent = () => {
                     </div>
 
                 ) : (
-                    <p className="text-center text-lg text-gray-600 dark:text-gray-300">
-                        ไม่มีงานที่รอดำเนินการในขณะนี้
-                    </p>
+                    <div className="mt-4 flex flex-col items-center justify-center text-center space-y-4 ">
+                        <div className="text-gray-400 dark:text-gray-500">
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-16 w-16"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                                strokeWidth={2}
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    d="M9 17v-2a4 4 0 118 0v2m1 0h2a2 2 0 002-2v-5a2 2 0 00-2-2h-3.586a1 1 0 01-.707-.293l-1.414-1.414a1 1 0 00-.707-.293H9.414a1 1 0 00-.707.293L7.293 8.707A1 1 0 016.586 9H3a2 2 0 00-2 2v5a2 2 0 002 2h2m10 0v2m-4 0v2"
+                                />
+                            </svg>
+                        </div>
+                        <p className="text-lg font-semibold text-gray-600 dark:text-gray-300">
+                            ไม่มีข้อมูลที่จะแสดง
+                        </p>
+                        <button
+                            onClick={fetchPendingTasks} // ใส่ฟังก์ชันสำหรับโหลดใหม่ถ้ามี
+                            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none"
+                        >
+                            โหลดข้อมูลอีกครั้ง
+                        </button>
+                    </div>
                 )}
 
 
@@ -469,6 +501,9 @@ const PendingTasksContent = () => {
 
 
             </div>
+
+
+
         </div >
     );
 

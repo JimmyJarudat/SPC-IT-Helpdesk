@@ -526,102 +526,102 @@ const AllTasksContent = () => {
 
 
             {/* Modal */}
-{isModalOpen && selectedTask && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-11/12 sm:w-2/3 lg:w-1/2">
-            {/* Header */}
-            <div className="flex justify-between items-center border-b border-gray-300 dark:border-gray-700 px-6 py-4">
-                <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
-                    รายละเอียดงาน - {selectedTask.jobID}
-                </h2>
-                <button
-                    className="text-gray-600 dark:text-gray-300 hover:text-red-500"
-                    onClick={closeModal}
-                >
-                    <FaTimes className="w-5 h-5" />
-                </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                    {/* Left Column: Job Information */}
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="font-semibold text-gray-800 dark:text-gray-200">ข้อมูลงาน</h3>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ชื่ออุปกรณ์:</span> {selectedTask.computerName || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ประเภทงาน:</span> {selectedTask.category || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">สถานที่:</span> {selectedTask.location || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">สถานะ:</span> {selectedTask.status || "N/A"}
-                            </p>
+            {isModalOpen && selectedTask && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-11/12 sm:w-2/3 lg:w-1/2">
+                        {/* Header */}
+                        <div className="flex justify-between items-center border-b border-gray-300 dark:border-gray-700 px-6 py-4">
+                            <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-200">
+                                รายละเอียดงาน - {selectedTask.jobID}
+                            </h2>
+                            <button
+                                className="text-gray-600 dark:text-gray-300 hover:text-red-500"
+                                onClick={closeModal}
+                            >
+                                <FaTimes className="w-5 h-5" />
+                            </button>
                         </div>
-                    </div>
 
-                    {/* Right Column: Reporter & Assignee */}
-                    <div className="space-y-4">
-                        <div>
-                            <h3 className="font-semibold text-gray-800 dark:text-gray-200">ผู้แจ้ง</h3>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ชื่อ:</span> {selectedTask.fullName || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ตำแหน่ง:</span> {selectedTask.position || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">อีเมล:</span> {selectedTask.email || "N/A"}
-                            </p>
+                        {/* Content */}
+                        <div className="p-6 space-y-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                {/* Left Column: Job Information */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">ข้อมูลงาน</h3>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ชื่ออุปกรณ์:</span> {selectedTask.computerName || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ประเภทงาน:</span> {selectedTask.category || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">สถานที่:</span> {selectedTask.location || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">สถานะ:</span> {selectedTask.status || "N/A"}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Right Column: Reporter & Assignee */}
+                                <div className="space-y-4">
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">ผู้แจ้ง</h3>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ชื่อ:</span> {selectedTask.fullName || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ตำแหน่ง:</span> {selectedTask.position || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">อีเมล:</span> {selectedTask.email || "N/A"}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">ผู้รับงาน</h3>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ชื่อ:</span> {selectedTask.nameJob_owner || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">ชื่อเล่น:</span> {selectedTask.nicknameJob_owner || "N/A"}
+                                        </p>
+                                        <p className="text-gray-700 dark:text-gray-300">
+                                            <span className="font-semibold">เบอร์โทร:</span> {selectedTask.phoneJob_owner || "N/A"}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Bottom Section */}
+                            <div className="space-y-4 border-t border-gray-300 dark:border-gray-700 pt-4">
+                                <div>
+                                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">รายละเอียดการแก้ไข</h3>
+                                    <p className="text-gray-700 dark:text-gray-300">{selectedTask.resolution_notes || "ไม่มีข้อมูล"}</p>
+                                </div>
+                                <div>
+                                    <h3 className="font-semibold text-gray-800 dark:text-gray-200">รายการอุปกรณ์ที่เปลี่ยน</h3>
+                                    <p className="text-gray-700 dark:text-gray-300">
+                                        {selectedTask.device_change_info
+                                            ? `อุปกรณ์เดิม: ${selectedTask.device_change_info.oldDevice || "N/A"} → อุปกรณ์ใหม่: ${selectedTask.device_change_info.newDevice || "N/A"}`
+                                            : "ไม่มีการเปลี่ยนอุปกรณ์"}
+                                    </p>
+                                </div>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="font-semibold text-gray-800 dark:text-gray-200">ผู้รับงาน</h3>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ชื่อ:</span> {selectedTask.nameJob_owner || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">ชื่อเล่น:</span> {selectedTask.nicknameJob_owner || "N/A"}
-                            </p>
-                            <p className="text-gray-700 dark:text-gray-300">
-                                <span className="font-semibold">เบอร์โทร:</span> {selectedTask.phoneJob_owner || "N/A"}
-                            </p>
+
+                        {/* Footer */}
+                        <div className="flex justify-end border-t border-gray-300 dark:border-gray-700 px-6 py-4">
+                            <button
+                                onClick={closeModal}
+                                className="px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600"
+                            >
+                                ปิด
+                            </button>
                         </div>
                     </div>
                 </div>
-
-                {/* Bottom Section */}
-                <div className="space-y-4 border-t border-gray-300 dark:border-gray-700 pt-4">
-                    <div>
-                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">รายละเอียดการแก้ไข</h3>
-                        <p className="text-gray-700 dark:text-gray-300">{selectedTask.resolution_notes || "ไม่มีข้อมูล"}</p>
-                    </div>
-                    <div>
-                        <h3 className="font-semibold text-gray-800 dark:text-gray-200">รายการอุปกรณ์ที่เปลี่ยน</h3>
-                        <p className="text-gray-700 dark:text-gray-300">
-                            {selectedTask.device_change_info
-                                ? `อุปกรณ์เดิม: ${selectedTask.device_change_info.oldDevice || "N/A"} → อุปกรณ์ใหม่: ${selectedTask.device_change_info.newDevice || "N/A"}`
-                                : "ไม่มีการเปลี่ยนอุปกรณ์"}
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Footer */}
-            <div className="flex justify-end border-t border-gray-300 dark:border-gray-700 px-6 py-4">
-                <button
-                    onClick={closeModal}
-                    className="px-4 py-2 bg-blue-500 text-white font-medium rounded-lg hover:bg-blue-600"
-                >
-                    ปิด
-                </button>
-            </div>
-        </div>
-    </div>
-)}
+            )}
 
 
 
