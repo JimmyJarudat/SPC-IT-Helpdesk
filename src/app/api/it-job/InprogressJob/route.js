@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@lib/dbConnect";
-import ITJob from "@/models/ITJob"; 
+import ITJob from "@/models/ITJob";
 
 export async function GET(req) {
     try {
@@ -8,8 +8,20 @@ export async function GET(req) {
         await dbConnect();
         console.log("Database connected");
 
+        const fullName = req.nextUrl.searchParams.get("fullName");
+
+        if (!fullName) {
+            return NextResponse.json(
+                { success: false, message: "Missing fullName parameter" },
+                { status: 400 }
+            );
+        }
+
         // ดึงข้อมูลงานที่มีสถานะ in_progress
-        const inProgressJobs = await ITJob.find({ status: "in_progress" });
+        const inProgressJobs = await ITJob.find({
+            status: "in_progress",
+            nameJob_owner: fullName
+        });
 
         // ตรวจสอบว่าพบงานหรือไม่
         if (inProgressJobs.length === 0) {

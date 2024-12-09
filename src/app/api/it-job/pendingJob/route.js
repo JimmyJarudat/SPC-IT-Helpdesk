@@ -62,7 +62,7 @@ export async function PUT(req) {
                     emailJob_owner: jobOwner.email || "",
                     phoneJob_owner: jobOwner.phone || "",
                     dateAcepJob_owner: new Date(),
-                    status: "in_progress", // อัปเดตสถานะเป็น 'in_progress'
+                    status: "pending", // อัปเดตสถานะเป็น 'in_progress'
                 },
             },
             { new: true } // คืนค่าข้อมูลที่อัปเดต

@@ -1,17 +1,17 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useUser } from "@/contexts/UserContext";
+import { useLoading } from "@/contexts/LoadingContext";
 
 const PendingTasksContent = () => {
     const { user } = useUser();
+    const { loading, showLoading, hideLoading } = useLoading();
     const [selectedTask, setSelectedTask] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [pendingTasks, setPendingTasks] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
     const [selectedTag, setSelectedTag] = useState("");
     const [isTagError, setIsTagError] = useState(false);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
-    const [selectedTagCategory, setSelectedTagCategory] = useState("");
 
     const tagCategories = {
         program: [
@@ -83,6 +83,7 @@ const PendingTasksContent = () => {
 
     useEffect(() => {
         const fetchPendingTasks = async () => {
+            showLoading();
             try {
                 const response = await fetch('/api/it-job/pendingJob'); // ปรับ endpoint ให้ตรงกับ API ของคุณ
                 const data = await response.json();
@@ -96,7 +97,7 @@ const PendingTasksContent = () => {
                 console.error('Error fetching pending tasks:', error);
                 setPendingTasks([]); // Default to an empty array on error
             } finally {
-                setIsLoading(false);
+                hideLoading();
             }
         };
 
@@ -115,9 +116,11 @@ const PendingTasksContent = () => {
     };
 
     const handleAcceptTask = async (task) => {
+        showLoading();
         if (!selectedTag) {
             setIsTagError(true);
             setIsPopupOpen(true);
+            hideLoading(); // ซ่อน Loading
             return;
         }
         try {
@@ -129,6 +132,9 @@ const PendingTasksContent = () => {
             };
 
             const updateFields = {
+                jobName: selectedTask.jobName,
+                jobDescription: selectedTask.jobDescription,
+                category: selectedTask.category,
                 progress: "0%",
                 tag: selectedTag,
             };
@@ -150,17 +156,21 @@ const PendingTasksContent = () => {
             const result = await response.json();
 
             if (response.ok && result.success) {
-                alert("รับงานสำเร็จ!");
+                //alert("รับงานสำเร็จ!");
                 setIsModalOpen(false);
                 setPendingTasks((prevTasks) => prevTasks.filter((t) => t.jobID !== task.jobID));
             } else {
                 console.error("Error:", result.message);
+                hideLoading(); // ซ่อน Loading
                 alert(`ไม่สามารถรับงานได้: ${result.message}`);
             }
 
         } catch (error) {
             console.error("Error accepting task:", error.message);
             alert("เกิดข้อผิดพลาดในการรับงาน");
+        }
+        finally {
+            hideLoading();
         }
     };
 
@@ -275,7 +285,9 @@ const PendingTasksContent = () => {
                 {/* Modal แสดงรายละเอียด */}
                 {isModalOpen && selectedTask && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                        <div className="bg-white rounded-lg shadow-lg p-6 max-w-3xl w-full dark:bg-gray-800">
+                        <div
+                            className="bg-white rounded-lg shadow-lg p-6 max-w-full sm:max-w-lg lg:max-w-3xl w-full dark:bg-gray-800 overflow-y-auto max-h-screen"
+                        >
                             {/* Header */}
                             <div className="flex justify-between items-center mb-6">
                                 <h2 className="text-xl font-bold text-gray-800 dark:text-white">
@@ -290,7 +302,7 @@ const PendingTasksContent = () => {
                             </div>
 
                             {/* Content */}
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {/* Column 1 */}
                                 <div>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
@@ -303,7 +315,9 @@ const PendingTasksContent = () => {
                                         <input
                                             type="text"
                                             value={selectedTask.jobName || ''}
-                                            onChange={(e) => setSelectedTask({ ...selectedTask, jobName: e.target.value })}
+                                            onChange={(e) =>
+                                                setSelectedTask({ ...selectedTask, jobName: e.target.value })
+                                            }
                                             className="w-full mt-1 p-2 border rounded dark:bg-gray-700 dark:text-gray-300"
                                         />
                                     </div>
@@ -313,17 +327,47 @@ const PendingTasksContent = () => {
                                         </label>
                                         <select
                                             value={selectedTask.category || ''}
-                                            onChange={(e) => setSelectedTask({ ...selectedTask, category: e.target.value })}
+                                            onChange={(e) => {
+                                                const newCategory = e.target.value;
+                                                setSelectedTask({ ...selectedTask, category: newCategory });
+                                                setSelectedTag(""); // Reset tag selection when category changes
+                                            }}
                                             className="w-full mt-1 p-2 border rounded dark:bg-gray-700 dark:text-gray-300"
                                         >
                                             <option value="">-- เลือกประเภทงาน --</option>
                                             <option value="device">อุปกรณ์</option>
                                             <option value="program">โปรแกรม</option>
                                             <option value="user">ผู้ใช้งาน</option>
-                                      
-
                                         </select>
                                     </div>
+                                    <div className="mb-2">
+                                        <label className="text-md text-gray-600 dark:text-gray-400">
+                                            <strong>แท็ก:</strong>
+                                        </label>
+                                        <select
+                                            value={selectedTag}
+                                            onChange={(e) => {
+                                                setSelectedTag(e.target.value);
+                                                setIsTagError(false); // Reset error state
+                                            }}
+                                            className={`w-full mt-1 p-2 border rounded ${isTagError
+                                                ? "border-red-500 dark:border-red-700"
+                                                : "border-gray-300 dark:border-gray-600"
+                                                } dark:bg-gray-700 dark:text-gray-300`}
+                                        >
+                                            <option value="">-- เลือกแท็ก --</option>
+                                            {selectedTask.category &&
+                                                tagCategories[selectedTask.category].map((tag, index) => (
+                                                    <option key={index} value={tag}>
+                                                        {tag}
+                                                    </option>
+                                                ))}
+                                        </select>
+                                        {isTagError && (
+                                            <p className="text-red-500 text-sm mt-1">กรุณาเลือกแท็ก</p>
+                                        )}
+                                    </div>
+
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>สถานะ:</strong> {selectedTask.status || '-'}
                                     </p>
@@ -341,6 +385,19 @@ const PendingTasksContent = () => {
                                             })} น.`
                                             : '-'}
                                     </p>
+                                    {selectedTask.attachment && (
+                                        <div className="mt-4">
+                                            <label className="block text-md text-gray-600 dark:text-gray-400 mb-2">
+                                                <strong>ภาพที่เกี่ยวข้อง:</strong>
+                                            </label>
+                                            <button
+                                                onClick={() => window.open(selectedTask.attachment, "_blank")}
+                                                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg shadow-md transition focus:ring-2 focus:ring-blue-300 dark:focus:ring-blue-800"
+                                            >
+                                                ดูภาพ
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Column 2 */}
@@ -349,16 +406,28 @@ const PendingTasksContent = () => {
                                         <strong>ผู้แจ้ง:</strong> {selectedTask.fullName || '-'}
                                     </p>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
+                                        <strong>ชื่อเล่นผู้แจ้ง:</strong> {selectedTask.nickName || '-'}
+                                    </p>
+                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>อีเมล:</strong> {selectedTask.email || '-'}
                                     </p>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>เบอร์โทร:</strong> {selectedTask.phoneNumber || '-'}
                                     </p>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
+                                        <strong>ตำแหน่ง:</strong> {selectedTask.position || '-'}
+                                    </p>
+                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>แผนก:</strong> {selectedTask.department || '-'}
                                     </p>
                                     <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
+                                        <strong>ฝ่าย:</strong> {selectedTask.division || '-'}
+                                    </p>
+                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
                                         <strong>บริษัท:</strong> {selectedTask.company || '-'}
+                                    </p>
+                                    <p className="text-md text-gray-600 dark:text-gray-400 mb-2">
+                                        <strong>สถานที่:</strong> {selectedTask.location || '-'}
                                     </p>
                                 </div>
                             </div>
@@ -370,7 +439,9 @@ const PendingTasksContent = () => {
                                 </label>
                                 <textarea
                                     value={selectedTask.jobDescription || ''}
-                                    onChange={(e) => setSelectedTask({ ...selectedTask, jobDescription: e.target.value })}
+                                    onChange={(e) =>
+                                        setSelectedTask({ ...selectedTask, jobDescription: e.target.value })
+                                    }
                                     className="w-full p-3 border rounded dark:bg-gray-700 dark:text-gray-300"
                                     rows="4"
                                 ></textarea>
@@ -388,7 +459,7 @@ const PendingTasksContent = () => {
                                     onClick={() => handleAcceptTask(selectedTask)}
                                     className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition"
                                 >
-                                    บันทึก
+                                    รับงาน
                                 </button>
                             </div>
                         </div>
@@ -396,33 +467,9 @@ const PendingTasksContent = () => {
                 )}
 
 
-                {selectedTagCategory && (
-                    <div className="mb-4">
-                        <label className="block text-gray-700 dark:text-gray-300 mb-2">
-                            แท็ก
-                        </label>
-                        <select
-                            value={selectedTag}
-                            onChange={(e) => setSelectedTag(e.target.value)}
-                            className="w-full p-2 border rounded dark:bg-gray-700 dark:text-gray-300"
-                        >
-                            <option value="">-- เลือกแท็ก --</option>
-                            {tagCategories[selectedTagCategory].map((tag, index) => (
-                                <option key={index} value={tag}>
-                                    {tag}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                )}
-
-
-
-
-
 
             </div>
-        </div>
+        </div >
     );
 
 
