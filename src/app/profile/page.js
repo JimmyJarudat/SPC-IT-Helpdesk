@@ -5,17 +5,23 @@ import { FaUser, FaKey, FaLock, FaUserTag, FaCamera, FaEnvelope, FaPhone, FaBuil
 import { useTheme } from "../../contexts/ThemeContext";
 import { getColorFromTheme } from '../../utils/colorMapping'
 import { useUser } from "@/contexts/UserContext";
+import { useLoading } from "@/contexts/LoadingContext";
+
 
 
 export default function ProfilePage() {
-    const { user } = useUser();
+    const { user, setUpdateStatus } = useUser();
     const { theme } = useTheme();
+    const {  showLoading, hideLoading } = useLoading();
+
+
     const [errors, setErrors] = useState({}); // เก็บข้อผิดพลาดของฟิลด์ต่างๆ
     const [selectedFile, setSelectedFile] = useState(null);
     const [previewImage, setPreviewImage] = useState(null);
     const [uploadStatus, setUploadStatus] = useState("");
     const [uploadedFilePath, setUploadedFilePath] = useState("");
-    console.log("พาท", uploadedFilePath)
+    
+
     const [formData, setFormData] = useState({
         fullName: "",
         nickName: "",
@@ -30,7 +36,10 @@ export default function ProfilePage() {
     const [activeTab, setActiveTab] = useState("Profile");
     const [loading, setLoading] = useState(false);
 
-    // ดึงข้อมูลผู้ใช้จาก API
+
+
+
+    
     useEffect(() => {
         const fetchProfile = async () => {
             setLoading(true);
@@ -38,9 +47,40 @@ export default function ProfilePage() {
                 const response = await fetch("/api/profile/profileupdate", {
                     method: "GET",
                 });
+    
                 if (response.ok) {
                     const data = await response.json();
                     setFormData(data);
+    
+                    // ดึงรูปภาพ
+                    if (data.profileImage) {
+                        try {
+                            const imageResponse = await fetch(data.profileImage, {
+                                method: "GET",
+                                headers: {
+                                    username: data.username,
+                                },
+                            });
+    
+                            if (imageResponse.ok) {
+                                const blob = await imageResponse.blob();
+                                const imageUrl = URL.createObjectURL(blob);
+                                setUploadedFilePath(data.profileImage);
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    profileImage: imageUrl,
+                                }));
+                            } else {
+                                console.warn("Image not found, using placeholder.");
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    profileImage: "/files/profile-images/placeholder.png",
+                                }));
+                            }
+                        } catch (error) {
+                            console.error("Error fetching profile image:", error);
+                        }
+                    }
                 } else {
                     console.error("Failed to fetch profile");
                 }
@@ -50,9 +90,13 @@ export default function ProfilePage() {
                 setLoading(false);
             }
         };
-
+    
         fetchProfile();
     }, []);
+    
+    
+
+
 
     const handleChange = (e) => {
         setFormData({
@@ -61,41 +105,53 @@ export default function ProfilePage() {
         });
         setErrors({ ...errors, [e.target.name]: "" }); // เคลียร์ข้อผิดพลาดเมื่อพิมพ์ใหม่
     };
-
     const handleUpdate = async () => {
-        setLoading(true); // เปิดสถานะโหลด
+        setLoading(true);
         try {
+            // สร้างข้อมูลที่จะส่ง
+            const updatedData = {
+                ...formData,
+            };
+
+            // ตรวจสอบว่า selectedFile มีค่าหรือไม่
+            if (selectedFile) {
+                updatedData.profileImage = uploadedFilePath; // ใช้พาทใหม่เมื่อมีการอัปโหลดรูป
+            } else {
+                // ใช้ค่าพาทเดิม หาก profileImage เป็น blob URL
+                updatedData.profileImage = formData.profileImage.startsWith("blob:")
+                    ? formData.profileImageFromDatabase // ใช้ค่าพาทเดิมจากฐานข้อมูล
+                    : formData.profileImage; // ใช้พาทปัจจุบัน
+            }
+
             const response = await fetch("/api/profile/profileupdate", {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify(formData), // ส่งข้อมูล formData ไปยัง API
+                body: JSON.stringify(updatedData), // ส่งข้อมูลที่อัปเดตไปยัง API
             });
 
             if (response.ok) {
-                // รับข้อมูลที่อัปเดตจาก API
-                const updatedData = await response.json();
-
-                // อัปเดต formData ใน state ด้วยข้อมูลใหม่
-                setFormData((prev) => ({
-                    ...prev,
-                    ...updatedData, // รวมข้อมูลใหม่เข้ากับข้อมูลเดิม
-                }));
-                setErrors({}); // เคลียร์ข้อผิดพลาด
                 alert("Profile updated successfully!");
+                setUpdateStatus(true); 
             } else {
-                // กรณี API ส่งสถานะล้มเหลว
                 const errorData = await response.json();
                 setErrors({ [errorData.field]: errorData.message });
             }
+            
         } catch (error) {
             console.error("Error updating profile:", error);
             alert("Error updating profile");
         } finally {
-            setLoading(false); // ปิดสถานะโหลด
+            setLoading(false); // ปิดสถานะการโหลด
         }
     };
+
+
+
+
+
+
 
 
     const handleChangePassword = async (e) => {
@@ -138,47 +194,38 @@ export default function ProfilePage() {
 
 
 
-
-
-
-
-
-    const handleFileChange = async (e) => {
+    const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setSelectedFile(file);
-            setPreviewImage(URL.createObjectURL(file)); // Show preview
+            const previewUrl = URL.createObjectURL(file); // สร้าง URL ชั่วคราวสำหรับพรีวิว
+            setPreviewImage(previewUrl);
 
-            const formData = new FormData();
-            formData.append("profileImage", file);
-            formData.append("username", user.username); // Add username to FormData
+            const formDataToSend = new FormData();
+            formDataToSend.append("profileImage", file);
+            formDataToSend.append("username", user.username);
 
-            try {
-                const response = await fetch("/api/profile/uploadImage", {
-                    method: "POST",
-                    body: formData,
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    setUploadStatus("Image uploaded successfully!");
-                    setUploadedFilePath(data.filePath); // Update the file path in state
-
-                    // Update formData with the new profileImage path
-                    setFormData((prev) => ({
-                        ...prev,
-                        profileImage: data.filePath, // Update the profileImage with the file path
-                    }));
-                } else {
-                    const errorData = await response.json();
-                    setUploadStatus(`Failed to upload image: ${errorData.message}`);
-                }
-            } catch (error) {
-                console.error("Upload Error:", error);
-                setUploadStatus("Error uploading image.");
-            }
+            fetch("/api/profile/uploadImage", {
+                method: "POST",
+                body: formDataToSend,
+            })
+                .then((response) => response.json())
+                .then((data) => {
+                    if (data.filePath) {
+                        setUploadedFilePath(data.filePath); // เก็บพาทจริงจาก API
+                        setFormData((prev) => ({
+                            ...prev,
+                            profileImage: data.filePath, // อัปเดตพาทจริงใน formData
+                        }));
+                    }
+                })
+                .catch((error) => console.error("Error uploading image:", error));
         }
     };
+
+
+
+
+
 
 
 
@@ -227,10 +274,11 @@ export default function ProfilePage() {
                                 <div className="relative w-16 h-16 mr-4">
                                     {/* Profile image preview */}
                                     <img
-                                        src={formData.profileImage || previewImage || "https://via.placeholder.com/150"}
+                                        src={previewImage || formData.profileImage || "https://via.placeholder.com/150"}
                                         alt="Profile"
                                         className="w-16 h-16 rounded-full border border-gray-300 dark:border-gray-700 object-cover"
                                     />
+
 
                                     {/* Button to trigger file input */}
                                     <button

@@ -8,6 +8,9 @@ const UserContext = createContext();
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null); // เก็บข้อมูลผู้ใช้
   const [isLoading, setIsLoading] = useState(true); // สถานะการโหลดข้อมูล
+  const [updateStatus, setUpdateStatus] = useState(false);
+
+  
   
   useEffect(() => {
     const loadUserFromCookie = () => {
@@ -17,15 +20,15 @@ export const UserProvider = ({ children }) => {
         .find((row) => row.startsWith("authToken="))
         ?.split("=")[1];
 
-      console.log("Token from Cookies:", token); // Debug Token
+      //console.log("Token from Cookies:", token); // Debug Token
 
       if (token) {
         try {
           const decoded = jwtDecode(token);
-          console.log("Decoded User:", decoded);
+         // console.log("Decoded User:", decoded);
           setUser(decoded);
         } catch (error) {
-          console.error("Error decoding token:", error.message);
+         // console.error("Error decoding token:", error.message);
           setUser(null);
         }
       } else {
@@ -64,8 +67,56 @@ export const UserProvider = ({ children }) => {
     setUser(null); // รีเซ็ต Context
   };
 
+  // ฟังก์ชันสำหรับดึงรูปภาพผู้ใช้
+  const fetchProfile = async () => {
+    try {
+        const response = await fetch("/api/profile/profileupdate", {
+            method: "GET",
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setUser(data);  // อัปเดตข้อมูลผู้ใช้ใน UserContext
+
+            // ดึงรูปภาพ
+            if (data.profileImage) {
+                try {
+                    const imageResponse = await fetch(data.profileImage, {
+                        method: "GET",
+                        headers: {
+                            username: data.username,
+                        },
+                    });
+
+                    if (imageResponse.ok) {
+                        const blob = await imageResponse.blob();
+                        const imageUrl = URL.createObjectURL(blob);
+                        setUser((prev) => ({
+                            ...prev,
+                            profileImage: imageUrl,
+                        }));
+                    } else {
+                        console.warn("Image not found, using placeholder.");
+                        setUser((prev) => ({
+                            ...prev,
+                            profileImage: "/files/profile-images/placeholder.png",
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Error fetching profile image:", error);
+                }
+            }
+        } else {
+            console.error("Failed to fetch profile");
+        }
+    } catch (error) {
+        console.error("Error fetching profile:", error);
+    }
+};
+
+
   return (
-    <UserContext.Provider value={{ user, isLoading, login, logout }}>
+    <UserContext.Provider value={{ user, isLoading, login, logout, fetchProfile,updateStatus, setUpdateStatus, }}>
       {children}
     </UserContext.Provider>
   );

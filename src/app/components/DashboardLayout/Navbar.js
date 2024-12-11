@@ -10,12 +10,80 @@ import SettingsDrawer from "./SettingsDrawer";
 import DropdownMenu from "./DropdownMenuNav";
 
 export default function Navbar() {
-    const { user, logout } = useUser();
+    const { user, logout, updateStatus } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
+
     const { toggleSidebar, activeMenu } = useSidebarContext();
     const router = useRouter();
+
+    const [formData, setFormData] = useState({
+        fullName: "",
+        nickName: "",
+        email: "",
+        phone: "",
+        company: "",
+        department: "",
+        employeeID: "",
+        profileImage: ""
+    });
+
+
+
+
+    useEffect(() => {
+        const fetchProfile = async () => {
+            try {
+                const response = await fetch("/api/profile/profileupdate", {
+                    method: "GET",
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setFormData(data);
+
+                    // ดึงรูปภาพ
+                    if (data.profileImage) {
+                        try {
+                            const imageResponse = await fetch(data.profileImage, {
+                                method: "GET",
+                                headers: {
+                                    username: data.username,
+                                },
+                            });
+
+                            if (imageResponse.ok) {
+                                const blob = await imageResponse.blob();
+                                const imageUrl = URL.createObjectURL(blob);
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    profileImage: imageUrl,
+                                }));
+                            } else {
+                                console.warn("Image not found, using placeholder.");
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    profileImage: "/files/profile-images/placeholder.png",
+                                }));
+                            }
+                        } catch (error) {
+                            console.error("Error fetching profile image:", error);
+                        }
+                    }
+                } else {
+                    console.error("Failed to fetch profile");
+                }
+            } catch (error) {
+                console.error("Error fetching profile:", error);
+            } 
+        };
+
+        fetchProfile();
+    }, [ updateStatus,user]);
+
+
+
 
 
     const toggleSettings = () => {
@@ -51,7 +119,7 @@ export default function Navbar() {
                     ☰
                 </button>
                 <h1 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                {activeMenu || "Dashboard"} {/* แสดงชื่อเมนูที่เลือก */}
+                    {activeMenu || "Dashboard"} {/* แสดงชื่อเมนูที่เลือก */}
                 </h1>
             </div>
 
@@ -91,7 +159,7 @@ export default function Navbar() {
                         className="flex items-center space-x-3 focus:outline-none"
                     >
                         <Image
-                            src={user?.profileImage || "https://picsum.photos/200/300"}
+                            src={formData.profileImage || "/files/profile-images/placeholder.png"}
                             alt="User Avatar"
                             className="w-10 h-10 rounded-full"
                             width={100}  // อัตราส่วนที่ต้องการ
@@ -100,7 +168,7 @@ export default function Navbar() {
                         />
                         <div className="hidden sm:block">
                             <p className="text-sm font-semibold text-gray-800 dark:text-gray-100">
-                                {user?.fullName || "Guest"}
+                                {formData.fullName || "Guest"}
                             </p>
                             <p className="text-xs text-gray-500 dark:text-gray-400">
                                 {user?.role || "Role"}
@@ -108,13 +176,13 @@ export default function Navbar() {
                         </div>
                     </button>
 
-                    
-                        <DropdownMenu
-                            isOpen={isDropdownOpen}
-                            onClose={() => setIsDropdownOpen(false)}
-                            handleLogout={handleLogout}
-                        />
-                    
+
+                    <DropdownMenu
+                        isOpen={isDropdownOpen}
+                        onClose={() => setIsDropdownOpen(false)}
+                        handleLogout={handleLogout}
+                    />
+
 
                 </div>
             </div>
