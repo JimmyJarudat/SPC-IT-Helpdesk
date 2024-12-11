@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const UserSchema = new mongoose.Schema(
   {
-    fullName: { type: String},
+    fullName: { type: String },
     username: { type: String, required: true, unique: true, trim: true },
     password: { type: String, required: true },
     role: {
@@ -16,15 +16,11 @@ const UserSchema = new mongoose.Schema(
       default: 'pending'
     },
     company: { type: String },
-    department: { type: String},
-    email: {
-      type: String,
-      unique: true,
-      match: [/.+@.+\..+/, 'Invalid email format'] // ตรวจสอบรูปแบบอีเมล
-    },
+    department: { type: String },
+    email: { type: String, },
     employeeID: { type: String },
-    nickName: { type: String},
-    phone: { type: String},
+    nickName: { type: String },
+    phone: { type: String },
     profileImage: { type: String, },
     computerName: { type: String, },
     position: { type: String, },

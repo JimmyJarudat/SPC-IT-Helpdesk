@@ -1,71 +1,91 @@
-import { NextResponse } from "next/server";
 import dbConnect from "@lib/dbConnect";
 import ITJob from "@/models/ITJob";
-import { useUser } from "@/contexts/UserContext";
+import { NextResponse } from "next/server";
 
 export async function GET(req) {
     try {
-        await dbConnect(); // เชื่อมต่อฐานข้อมูล
-        console.log("Database connected");
+        await dbConnect();
 
         const { searchParams } = new URL(req.url);
+        const fullName = searchParams.get("fullName"); // ดึงชื่อผู้ใช้งานจาก query
+        const page = parseInt(searchParams.get("page")) || 1;
+        const limit = parseInt(searchParams.get("limit")) || 20;
+        let startDate = searchParams.get("startDate");
+        let endDate = searchParams.get("endDate");
+        const category = searchParams.get("category");
+        const status = searchParams.get("status");
 
-        // รับค่า Query Parameters
-        const fullName = searchParams.get("fullName");
-        const page = parseInt(searchParams.get("page")) || 1; // หน้าปัจจุบัน (default: 1)
-        const limit = parseInt(searchParams.get("limit")) || 50; // จำนวนข้อมูลต่อหน้า (default: 10)
-
+        // ตรวจสอบว่ามี Full Name หรือไม่
         if (!fullName) {
-            console.error("FullName is missing in the request");
             return NextResponse.json(
                 { success: false, message: "User fullName is required" },
                 { status: 400 }
             );
         }
 
-        console.log(`Fetching jobs for fullName: ${fullName}, Page: ${page}, Limit: ${limit}`);
+        // ใช้ช่วงวันที่ของเดือนปัจจุบัน หากไม่มีการระบุวันที่
+        if (!startDate || !endDate) {
+            const now = new Date();
+            startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+            endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59).toISOString();
+        }
 
-        // คำนวณ offset สำหรับดึงข้อมูล
+        
+
+        // ปรับการเรียงลำดับ
+        const sortOption = searchParams.get("sort") === "asc" ? 1 : -1;
+        const sort = { createdAt: sortOption };
+
+        // กำหนด Filters
+        const filters = {
+            nameJob_owner: fullName, // กรองเฉพาะงานที่ `nameJob_owner` ตรงกับ `fullName`
+            status: { $in: ["completed", "completed_Late"] },
+            createdAt: {
+                $gte: new Date(startDate),
+                $lte: new Date(endDate),
+            },
+        };
+
+        
+        if (searchParams.get("search")) {
+            const searchQuery = searchParams.get("search");
+            filters.$or = [
+                { jobID: { $regex: searchQuery, $options: "i" } }, // ค้นหาใน jobID
+                { jobName: { $regex: searchQuery, $options: "i" } }, // ค้นหาใน jobName
+                { nickName: { $regex: searchQuery, $options: "i" } } // ค้นหาใน nameJob_owner
+            ];
+        }
+
+        // เพิ่มตัวกรองหมวดหมู่
+        if (category) {
+            filters.category = category;
+        }
+
+        // เพิ่มตัวกรองสถานะ
+        if (status) {
+            filters.status = status;
+        }
+
+        // Pagination และ Sorting
         const skip = (page - 1) * limit;
 
-        // ดึงข้อมูลงานที่ตรงตามเงื่อนไข
-        const completedJobs = await ITJob.find({
-            status: { $in: ["completed", "completed_Late"] },
-            nameJob_owner: fullName,
-        })
-            .skip(skip) // ข้ามข้อมูลตาม offset
-            .limit(limit) // ดึงข้อมูลตามจำนวนที่กำหนด
-            .sort({ updatedAt: -1 }); // เรียงลำดับจากล่าสุดไปเก่าสุด
+        // Query ข้อมูลจาก MongoDB
+        const jobs = await ITJob.find(filters).skip(skip).limit(limit).sort(sort);
+        const totalJobs = await ITJob.countDocuments(filters);
 
-        // นับจำนวนเอกสารทั้งหมด
-        const totalJobs = await ITJob.countDocuments({
-            status: { $in: ["completed", "completed_Late"] },
-            nameJob_owner: fullName,
-        });
-
-        console.log("Completed jobs fetched:", completedJobs);
-
-        return NextResponse.json(
-            {
-                success: true,
-                data: completedJobs,
-                pagination: {
-                    total: totalJobs,
-                    page,
-                    limit,
-                    totalPages: Math.ceil(totalJobs / limit),
-                },
+        // ส่งผลลัพธ์กลับไป
+        return NextResponse.json({
+            success: true,
+            data: jobs,
+            pagination: {
+                total: totalJobs,
+                page,
+                limit,
+                totalPages: Math.ceil(totalJobs / limit),
             },
-            { status: 200 }
-        );
+        });
     } catch (error) {
-        console.error("Error fetching completed jobs:", error.message);
-        return NextResponse.json(
-            { success: false, message: "Internal server error" },
-            { status: 500 }
-        );
+        console.error("Error fetching tasks:", error.message);
+        return NextResponse.json({ success: false, message: "Internal server error" }, { status: 500 });
     }
 }
-
-
-

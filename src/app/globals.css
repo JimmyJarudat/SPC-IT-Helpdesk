@@ -86,3 +86,76 @@ option::before {
   border-radius: 50%;
   background-color: var(--theme-color);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+.react-calendar {
+  font-family: Arial, sans-serif;
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.react-calendar__navigation {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px;
+}
+
+.react-calendar__navigation button {
+  background: none;
+  border: none;
+  color: #1f2937;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.react-calendar__navigation button:hover {
+  text-decoration: underline;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+  color: #9ca3af;
+}
+
+.react-calendar__tile {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 8px;
+  background: none;
+  transition: background 0.2s;
+}
+
+.react-calendar__tile--now {
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+.react-calendar__tile--active {
+  background: #ef4444;
+  color: white;
+  border-radius: 8px;
+}
+
+.react-calendar__tile:hover {
+  background: #f9fafb;
+  border-radius: 8px;
+}
+
+.highlight-current-date {
+  background-color: #2563eb !important;
+  color: white !important;
+  border-radius: 50%;
+}

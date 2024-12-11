@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSidebarContext } from "../../../contexts/SidebarContext";
 import { useUser } from "@/contexts/UserContext";
 import { useRouter } from "next/navigation";
@@ -13,7 +13,7 @@ export default function Navbar() {
     const { user, logout, updateStatus } = useUser();
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-
+    const dropdownRef = useRef(null); // ใช้สำหรับอ้างอิง Dropdown
 
     const { toggleSidebar, activeMenu } = useSidebarContext();
     const router = useRouter();
@@ -29,6 +29,19 @@ export default function Navbar() {
         profileImage: ""
     });
 
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setIsDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
 
 
@@ -76,11 +89,11 @@ export default function Navbar() {
                 }
             } catch (error) {
                 console.error("Error fetching profile:", error);
-            } 
+            }
         };
 
         fetchProfile();
-    }, [ updateStatus,user]);
+    }, [updateStatus, user]);
 
 
 
@@ -153,7 +166,7 @@ export default function Navbar() {
                 </div>
 
                 {/* ข้อมูลผู้ใช้ */}
-                <div className="relative">
+                <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={toggleDropdown}
                         className="flex items-center space-x-3 focus:outline-none"
@@ -176,13 +189,14 @@ export default function Navbar() {
                         </div>
                     </button>
 
-
-                    <DropdownMenu
-                        isOpen={isDropdownOpen}
-                        onClose={() => setIsDropdownOpen(false)}
-                        handleLogout={handleLogout}
-                    />
-
+                    {isDropdownOpen && (
+                        <DropdownMenu
+                            isOpen={isDropdownOpen}
+                            onClose={() => setIsDropdownOpen(false)}
+                            handleLogout={handleLogout}
+                        />
+                    )}
+                    
 
                 </div>
             </div>

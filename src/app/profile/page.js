@@ -7,12 +7,16 @@ import { getColorFromTheme } from '../../utils/colorMapping'
 import { useUser } from "@/contexts/UserContext";
 import { useLoading } from "@/contexts/LoadingContext";
 
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+
 
 
 export default function ProfilePage() {
     const { user, setUpdateStatus } = useUser();
     const { theme } = useTheme();
-    const {  showLoading, hideLoading } = useLoading();
+    const { showLoading, hideLoading } = useLoading();
 
 
     const [errors, setErrors] = useState({}); // เก็บข้อผิดพลาดของฟิลด์ต่างๆ
@@ -20,38 +24,39 @@ export default function ProfilePage() {
     const [previewImage, setPreviewImage] = useState(null);
     const [uploadStatus, setUploadStatus] = useState("");
     const [uploadedFilePath, setUploadedFilePath] = useState("");
-    
+
 
     const [formData, setFormData] = useState({
         fullName: "",
         nickName: "",
         email: "",
         phone: "",
-        company: "",
-        department: "",
         employeeID: "",
+        computerName: "",
+        company: "",
+        location: "",
+        position: "",
+        division: "",
+        department: "",
         profileImage: uploadedFilePath,
     });
 
     const [activeTab, setActiveTab] = useState("Profile");
     const [loading, setLoading] = useState(false);
 
-
-
-
-    
     useEffect(() => {
         const fetchProfile = async () => {
-            setLoading(true);
+            showLoading();
             try {
                 const response = await fetch("/api/profile/profileupdate", {
                     method: "GET",
                 });
-    
+
                 if (response.ok) {
+                    hideLoading();
                     const data = await response.json();
                     setFormData(data);
-    
+
                     // ดึงรูปภาพ
                     if (data.profileImage) {
                         try {
@@ -61,7 +66,7 @@ export default function ProfilePage() {
                                     username: data.username,
                                 },
                             });
-    
+
                             if (imageResponse.ok) {
                                 const blob = await imageResponse.blob();
                                 const imageUrl = URL.createObjectURL(blob);
@@ -90,23 +95,53 @@ export default function ProfilePage() {
                 setLoading(false);
             }
         };
-    
+
         fetchProfile();
     }, []);
-    
-    
-
-
 
     const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-        setErrors({ ...errors, [e.target.name]: "" }); // เคลียร์ข้อผิดพลาดเมื่อพิมพ์ใหม่
+        const { name, value } = e.target;
+    
+        // ตรวจสอบรูปแบบของอีเมล
+        if (name === "email") {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(value)) {
+                setErrors((prev) => ({ ...prev, email: "Invalid email format." }));
+            } else {
+                setErrors((prev) => ({ ...prev, email: "" })); // ลบข้อผิดพลาดเมื่อกรอกถูกต้อง
+            }
+        }
+    
+        // ตรวจสอบเบอร์โทรศัพท์ (3 หลักเท่านั้น)
+        if (name === "phone") {
+            const phoneRegex = /^\d{3}$/; // เบอร์โทรต้องเป็นตัวเลข 3 หลัก
+            if (!phoneRegex.test(value)) {
+                setErrors((prev) => ({ ...prev, phone: "Phone number must be exactly 3 digits." }));
+            } else {
+                setErrors((prev) => ({ ...prev, phone: "" })); // ลบข้อผิดพลาดเมื่อกรอกถูกต้อง
+            }
+        }
+    
+        // อัปเดตฟอร์มข้อมูล
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
     };
+    
+    
     const handleUpdate = async () => {
+        showLoading();
         setLoading(true);
+
+        // ตรวจสอบข้อผิดพลาดก่อนบันทึก
+        if (errors.email|| errors.phone) {
+            toast.error("Please fix the errors before saving.");
+            hideLoading();
+            setLoading(false);
+            return;
+        }
+
         try {
             // สร้างข้อมูลที่จะส่ง
             const updatedData = {
@@ -132,27 +167,23 @@ export default function ProfilePage() {
             });
 
             if (response.ok) {
-                alert("Profile updated successfully!");
-                setUpdateStatus(true); 
+                // alert("Profile updated successfully!");
+                toast.success("Profile updated successfully!");
+                setUpdateStatus(true);
             } else {
                 const errorData = await response.json();
+                toast.error(`Error: ${errorData.message}`);
                 setErrors({ [errorData.field]: errorData.message });
             }
-            
+
         } catch (error) {
             console.error("Error updating profile:", error);
-            alert("Error updating profile");
+            toast.error("An unexpected error occurred.");
         } finally {
+            hideLoading();
             setLoading(false); // ปิดสถานะการโหลด
         }
     };
-
-
-
-
-
-
-
 
     const handleChangePassword = async (e) => {
         e.preventDefault();
@@ -192,8 +223,6 @@ export default function ProfilePage() {
         }
     };
 
-
-
     const handleFileChange = (e) => {
         const file = e.target.files[0];
         if (file) {
@@ -221,13 +250,6 @@ export default function ProfilePage() {
                 .catch((error) => console.error("Error uploading image:", error));
         }
     };
-
-
-
-
-
-
-
 
     return (
         <div className="flex-1 min-h-screen overflow-auto p-16 bg-gray-100 dark:bg-gray-800">
@@ -317,6 +339,7 @@ export default function ProfilePage() {
                                     name="fullName"
                                     value={formData.fullName || ""}
                                     onChange={handleChange}
+                                    placeholder="Enter your Full name"
                                     className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                                 />
                             </div>
@@ -334,6 +357,7 @@ export default function ProfilePage() {
                                     name="nickName"
                                     value={formData.nickName || ""}
                                     onChange={handleChange}
+                                    placeholder="Enter your Nickname"
                                     className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                                 />
                             </div>
@@ -369,9 +393,8 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-
-                        {/* Phone */}
-                        <div className="grid grid-cols-12 items-center pb-4">
+                        {/* phone */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
                             <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 Phone
                             </label>
@@ -400,6 +423,41 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
+                        {/* Employee ID */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Employee ID
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaIdBadge className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="employeeID"
+                                    value={formData.employeeID || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter your Employee ID"
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Computer Name */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Computer Name
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaIdBadge className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="computerName"
+                                    value={formData.computerName || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter your Employee ID"
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
 
                         {/* Company */}
                         <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
@@ -413,13 +471,68 @@ export default function ProfilePage() {
                                     name="company"
                                     value={formData.company || ""}
                                     onChange={handleChange}
+                                    placeholder="Enter your Company "
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* location */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Location
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaUserTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="location"
+                                    value={formData.location || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter your Location"
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* position */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Position
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaUserTag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="position"
+                                    value={formData.position || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter your Position"
+                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
+                                />
+                            </div>
+                        </div>
+
+                        {/* division */}
+                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
+                                Division
+                            </label>
+                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
+                                <FaBuilding className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
+                                <input
+                                    type="text"
+                                    name="division"
+                                    value={formData.division || ""}
+                                    onChange={handleChange}
+                                    placeholder="Enter your Division"
                                     className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                                 />
                             </div>
                         </div>
 
                         {/* Department */}
-                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
+                        <div className="grid grid-cols-12 items-center pb-4 ">
                             <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
                                 Department
                             </label>
@@ -430,27 +543,12 @@ export default function ProfilePage() {
                                     name="department"
                                     value={formData.department || ""}
                                     onChange={handleChange}
+                                    placeholder="Enter your Department"
                                     className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
                                 />
                             </div>
                         </div>
 
-                        {/* Employee ID */}
-                        <div className="grid grid-cols-12 items-center pb-4 border-b border-gray-300 dark:border-gray-700">
-                            <label className="col-span-3 text-gray-700 dark:text-gray-200 font-medium justify-self-start">
-                                Employee ID
-                            </label>
-                            <div className="relative col-span-9 justify-self-start w-[80%] ml-auto">
-                                <FaIdBadge className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 dark:text-gray-300" />
-                                <input
-                                    type="text"
-                                    name="employeeID"
-                                    value={formData.employeeID || ""}
-                                    onChange={handleChange}
-                                    className="w-full pl-10 p-2 border border-gray-300 rounded dark:bg-gray-800 dark:border-gray-700 dark:text-gray-300"
-                                />
-                            </div>
-                        </div>
                     </div>
 
                     {/* Buttons */}
@@ -573,7 +671,7 @@ export default function ProfilePage() {
 
 
 
-
+            <ToastContainer position="top-right" autoClose={3000} />
         </div>
     );
 

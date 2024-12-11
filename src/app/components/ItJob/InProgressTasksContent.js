@@ -28,7 +28,6 @@ const InProgressTasksContent = () => {
         return new Date();
     });
 
-
     useEffect(() => {
         if (selectedTask && selectedTask.completionDate) {
             const completionDate = new Date(selectedTask.completionDate);
@@ -48,9 +47,6 @@ const InProgressTasksContent = () => {
         }
     }, [selectedTask]);
 
-
-
-
     const [deviceChangeInfo, setDeviceChangeInfo] = useState({
         oldDevice: '',
         newDevice: '',
@@ -69,7 +65,6 @@ const InProgressTasksContent = () => {
         setIsModalOpen(true);
     };
 
-
     // ฟังก์ชันจัดการการเปลี่ยนแปลงข้อมูลฟอร์ม
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -79,7 +74,6 @@ const InProgressTasksContent = () => {
     const handleDateChange = (date) => {
         setDeviceChangeInfo((prev) => ({ ...prev, replacementDate: date })); // อัปเดต Date object
     };
-
 
     useEffect(() => {
         if (closingDate && closingTime) {
@@ -123,8 +117,6 @@ const InProgressTasksContent = () => {
         }
     }, [closingDate, closingTime, selectedTask]);
 
-
-
     const isValidTime = (time) => {
         if (!time || time.length !== 5) return false; // ตรวจสอบรูปแบบ HH:MM
         const [hours, minutes] = time.split(":").map(Number);
@@ -161,16 +153,6 @@ const InProgressTasksContent = () => {
         // แปลงเป็น ISO string และคืนค่า
         return dateTime.toISOString();
     };
-
-
-
-
-
-
-
-
-
-
 
     useEffect(() => {
         // ดึงข้อมูลจาก API
@@ -210,8 +192,6 @@ const InProgressTasksContent = () => {
     };
 
     // ฟังก์ชันบันทึกเวลา
-
-
     const calculateProcessTime = (createdAt, completionDate) => {
         if (!createdAt || !completionDate) return null;
 
@@ -248,8 +228,6 @@ const InProgressTasksContent = () => {
             setClosingTime("");
         }
     }, [selectedTask]);
-
-
 
     const handleSaveTask = async () => {
         if (!selectedTask) return;
@@ -358,15 +336,12 @@ const InProgressTasksContent = () => {
         }
     };
 
-
-
-
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
             <div className="max-w-7xl mx-auto bg-white shadow-lg rounded-lg p-6 dark:bg-gray-800">
                 <div className="mb-8 text-center">
                     <h1 className="text-4xl font-extrabold text-gray-800 dark:text-white mb-4">
-                        งานรอดำเนินการ
+                        งานที่กำลังดำเนินการ
                     </h1>
                     <p className="text-lg font-medium text-gray-600 dark:text-gray-400">
                         จำนวนงานทั้งหมด: <span className="text-blue-600 dark:text-blue-400">{pendingTasks.length}</span> งาน
