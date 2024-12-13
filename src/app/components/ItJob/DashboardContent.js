@@ -10,6 +10,7 @@ import { Bar } from "react-chartjs-2";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import { processChartData, chartOptions } from "./assetsDashboard/chartUtilsJob";
+import { progressTime, chartOptionsTime } from "./assetsDashboard/chartProgressTime"
 import {
     Chart as ChartJS,
     CategoryScale,
@@ -47,27 +48,51 @@ const DashboardContent = () => {
     const [chartData, setChartData] = useState({ labels: [], datasets: [] });
     const [comparisonData, setComparisonData] = useState(null);
     const [isCompareActive, setIsCompareActive] = useState(false);
+    const [selectedType, setSelectedType] = useState(null);
+
+    const [workHoursChartData, setWorkHoursChartData] = useState({ labels: [], datasets: [] });
     const [processedData, setProcessedData] = useState({});
-    const [workHoursChartData, setWorkHoursChartData] = useState({});
-    const [selectedType, setSelectedType] = useState("");
-    const [selectedTypes, setSelectedTypes] = useState(["daily", "program", "device", "user"]);
+    const [selectedCategories, setSelectedCategories] = useState({
+        Device: true,
+        Program: true,
+        User: true,
+        Daily: true,
+    });
 
 
-    useEffect(() => {
-        if (tasks.length > 0) {
-            const workHoursData = processWorkHours(tasks);
-            setProcessedData(workHoursData);
-        }
-    }, [tasks]);
+    const toggleCategoryVisibility = (category, isVisible) => {
+        setSelectedCategories((prev) => {
+            const updatedCategories = { ...prev, [category]: isVisible };
 
+            // ประมวลผลข้อมูลใหม่สำหรับทั้งกราฟและตาราง
+            const { chartData: updatedChartData, categoryData: updatedCategoryData } = progressTime(
+                tasks,
+                activeFilter,
+                date,
+                isDarkMode,
+                adjustTimezone,
+                updatedCategories
+            );
 
-    const handleTypeSelection = (type) => {
-        setSelectedTypes((prev) =>
-            prev.includes(type)
-                ? prev.filter((t) => t !== type) // เอาออกถ้าประเภทถูกเลือกแล้ว
-                : [...prev, type] // เพิ่มถ้าไม่ถูกเลือก
-        );
+            // อัปเดต state
+            setWorkHoursChartData(updatedChartData);
+            setProcessedData(updatedCategoryData); // อัปเดตข้อมูลสำหรับตาราง
+
+            return updatedCategories;
+        });
     };
+
+
+
+
+
+
+
+
+
+
+
+
 
     const adjustTimezone = (date) => {
         // แปลงวันที่ให้ตรงกับ UTC เพื่อป้องกันการย้อนวัน
@@ -121,16 +146,41 @@ const DashboardContent = () => {
                 // เก็บข้อมูลงานทั้งหมดใน state
                 setTasks(result.data);
 
-                // ประมวลผลข้อมูลสำหรับแสดงในกราฟ
+                // ประมวลผลข้อมูลสำหรับกราฟแสดงประเภทงาน
                 const data = processChartData(result.data, activeFilter, date, isDarkMode, adjustTimezone);
                 setChartData(data);
-            } else {
+
+                // ประมวลผลข้อมูลสำหรับกราฟแสดงชั่วโมงทำงาน
+                const { chartData: dataTime, categoryData } = progressTime(
+                    result.data,
+                    activeFilter,
+                    date,
+                    isDarkMode,
+                    adjustTimezone,
+                    selectedCategories
+                );
+                setWorkHoursChartData(dataTime);
+
+                // เก็บข้อมูลสำหรับตารางประเภทงาน
+                setProcessedData(categoryData);
+
+                // ตรวจสอบผลลัพธ์
+                console.log("Chart Data:", data);
+                console.log("Work Hours Chart Data:", dataTime);
+                console.log("Processed Data for Table:", categoryData);
+            }
+            else {
                 console.error(result.message);
+                setTasks([]); // ตั้งค่า tasks เป็นค่าว่าง
+                setChartData({ labels: [], datasets: [] }); // ล้างกราฟ
+                ser
             }
         } catch (error) {
             console.error("Error fetching jobs:", error);
+            setTasks([]); // ตั้งค่า tasks เป็นค่าว่างเมื่อเกิดข้อผิดพลาด
+            setChartData({ labels: [], datasets: [] }); // ล้างกราฟ
         } finally {
-            hideLoading(); // ซ่อน loading หลังประมวลผลเสร็จ
+            hideLoading();
         }
     };
 
@@ -195,209 +245,6 @@ const DashboardContent = () => {
             hideLoading();
         }
     };
-
-
-
-    const getColorForCategory = (category, isDarkMode) => {
-        const colors = {
-            device: isDarkMode ? "#F87171" : "#EF4444", // สีสำหรับ Device
-            program: isDarkMode ? "#60A5FA" : "#3B82F6", // สีสำหรับ Program
-            user: isDarkMode ? "#34D399" : "#10B981", // สีสำหรับ User
-            daily: isDarkMode ? "#FBBF24" : "#F59E0B", // สีสำหรับ Daily
-        };
-
-        return colors[category] || (isDarkMode ? "#D1D5DB" : "#9CA3AF"); // สี Default
-    };
-
-
-    const parseProcessTime = (processTime) => {
-        let hours = 0;
-        let minutes = 0;
-
-        if (processTime.includes("ชั่วโมง")) {
-            const hourMatch = processTime.match(/(\d+)\s*ชั่วโมง/);
-            if (hourMatch) {
-                hours += parseInt(hourMatch[1], 10);
-            }
-        }
-
-        if (processTime.includes("นาที")) {
-            const minuteMatch = processTime.match(/(\d+)\s*นาที/);
-            if (minuteMatch) {
-                minutes += parseInt(minuteMatch[1], 10);
-            }
-        }
-
-        return hours + minutes / 60;
-    };
-
-    // ฟังก์ชันสำหรับประมวลผล work hours
-    const processWorkHours = (tasks) => {
-        const result = {};
-
-        tasks.forEach((task) => {
-            const category = task.category?.toLowerCase() || "others";
-            const processTime = task.processTime || "0 นาที";
-
-            let hours = 0;
-            let minutes = 0;
-
-            if (processTime.includes("ชั่วโมง")) {
-                const hourMatch = processTime.match(/(\d+)\s*ชั่วโมง/);
-                if (hourMatch) {
-                    hours += parseInt(hourMatch[1], 10);
-                }
-            }
-
-            if (processTime.includes("นาที")) {
-                const minuteMatch = processTime.match(/(\d+)\s*นาที/);
-                if (minuteMatch) {
-                    minutes += parseInt(minuteMatch[1], 10);
-                }
-            }
-
-            // รวมชั่วโมงและนาที
-            hours += minutes / 60;
-
-            if (!result[category]) {
-                result[category] = { taskCount: 0, totalHours: 0 };
-            }
-
-            result[category].taskCount += 1;
-            result[category].totalHours += hours;
-        });
-
-        return result;
-    };
-
-    // ฟังก์ชันสำหรับประมวลผลข้อมูลสำหรับกราฟ
-    // ฟังก์ชันสำหรับประมวลผลข้อมูลสำหรับกราฟ
-    useEffect(() => {
-        if (tasks.length > 0) {
-            let labels = [];
-            let datasets = [];
-    
-            if (activeFilter === "Yearly") {
-                // การคำนวณแบบรายปี
-                labels = Array.from({ length: 12 }, (_, i) =>
-                    new Date(date.getFullYear(), i).toLocaleString("default", { month: "long" })
-                );
-    
-                const monthlyData = labels.map((_, monthIndex) =>
-                    selectedTypes.map((type) =>
-                        tasks
-                            .filter((task) => {
-                                const taskDate = new Date(task.createdAt);
-                                return (
-                                    taskDate.getFullYear() === date.getFullYear() &&
-                                    taskDate.getMonth() === monthIndex &&
-                                    task.category?.toLowerCase() === type
-                                );
-                            })
-                            .reduce((total, task) => total + parseProcessTime(task.processTime), 0)
-                    )
-                );
-    
-                datasets = selectedTypes.map((type, index) => ({
-                    label: type,
-                    data: monthlyData.map((monthData) => monthData[index]),
-                    backgroundColor: getColorForCategory(type, isDarkMode),
-                }));
-            } else if (activeFilter === "Monthly") {
-                // การคำนวณแบบรายเดือน
-                const daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
-                labels = Array.from({ length: daysInMonth }, (_, i) => (i + 1).toString());
-    
-                const dailyData = labels.map((day) =>
-                    selectedTypes.map((type) =>
-                        tasks
-                            .filter((task) => {
-                                const taskDate = new Date(task.createdAt);
-                                return (
-                                    taskDate.getFullYear() === date.getFullYear() &&
-                                    taskDate.getMonth() === date.getMonth() &&
-                                    taskDate.getDate() === parseInt(day, 10) &&
-                                    task.category?.toLowerCase() === type
-                                );
-                            })
-                            .reduce((total, task) => total + parseProcessTime(task.processTime), 0)
-                    )
-                );
-    
-                datasets = selectedTypes.map((type, index) => ({
-                    label: type,
-                    data: dailyData.map((dayData) => dayData[index]),
-                    backgroundColor: getColorForCategory(type, isDarkMode),
-                }));
-            } else if (activeFilter === "Weekly") {
-                // การคำนวณแบบรายสัปดาห์
-                const endOfWeek = new Date(date);
-                labels = Array.from({ length: 7 }, (_, i) => {
-                    const day = new Date(endOfWeek);
-                    day.setDate(endOfWeek.getDate() - (6 - i)); // ย้อน 6 วัน
-                    return day.toLocaleDateString("default", { weekday: "short" });
-                });
-    
-                const weeklyData = labels.map((_, dayIndex) =>
-                    selectedTypes.map((type) =>
-                        tasks
-                            .filter((task) => {
-                                const taskDate = new Date(task.createdAt);
-                                return (
-                                    taskDate >= new Date(endOfWeek.getFullYear(), endOfWeek.getMonth(), endOfWeek.getDate() - 6) &&
-                                    taskDate <= endOfWeek &&
-                                    taskDate.getDay() === (endOfWeek.getDay() - dayIndex + 7) % 7 &&
-                                    task.category?.toLowerCase() === type
-                                );
-                            })
-                            .reduce((total, task) => total + parseProcessTime(task.processTime), 0)
-                    )
-                );
-    
-                datasets = selectedTypes.map((type, index) => ({
-                    label: type,
-                    data: weeklyData.map((dayData) => dayData[index]),
-                    backgroundColor: getColorForCategory(type, isDarkMode),
-                }));
-            } else if (activeFilter === "Daily") {
-                // การคำนวณแบบรายวัน
-                labels = selectedTypes;
-    
-                const dailyData = selectedTypes.map((type) =>
-                    tasks
-                        .filter((task) => {
-                            const taskDate = new Date(task.createdAt);
-                            return (
-                                taskDate.getFullYear() === date.getFullYear() &&
-                                taskDate.getMonth() === date.getMonth() &&
-                                taskDate.getDate() === date.getDate() &&
-                                task.category?.toLowerCase() === type
-                            );
-                        })
-                        .reduce((total, task) => total + parseProcessTime(task.processTime), 0)
-                );
-    
-                datasets = [
-                    {
-                        label: "Work Hours",
-                        data: dailyData,
-                        backgroundColor: selectedTypes.map((type) =>
-                            getColorForCategory(type, isDarkMode)
-                        ),
-                    },
-                ];
-            }
-    
-            setWorkHoursChartData({
-                labels,
-                datasets,
-            });
-        }
-    }, [tasks, activeFilter, date, selectedTypes.join(",")]);
-    
-
-
-
 
 
 
@@ -691,6 +538,7 @@ const DashboardContent = () => {
 
             </div>
 
+
             {/*กราฟชั่วโมงทำงาน*/}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
                 {/* ตารางประเภทงาน */}
@@ -698,7 +546,20 @@ const DashboardContent = () => {
                     {/* Header */}
                     <h2 className="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
                         <span className="bg-blue-500 text-white p-2 rounded-full">
-                            <FaTasks className="h-5 w-5" />
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                            >
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth="2"
+                                    d="M9.75 3.75l4.5 4.5m0 0l-4.5 4.5m4.5-4.5H4.5m10.5 0a2.25 2.25 0 012.25 2.25v9a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 19.5v-9a2.25 2.25 0 012.25-2.25"
+                                />
+                            </svg>
                         </span>
                         Task Types
                     </h2>
@@ -708,19 +569,30 @@ const DashboardContent = () => {
                         <div>
                             <h3 className="text-lg font-semibold">Total Hours</h3>
                             <p className="text-4xl font-extrabold">
-                                {Object.entries(processedData)
-                                    .filter(([type]) => selectedTypes.includes(type)) // กรองเฉพาะประเภทที่เลือกในเช็คบ็อกซ์
-                                    .reduce((total, [, data]) => total + data.totalHours, 0)
+                                {Object.values(processedData)
+                                    .reduce((total, data) => total + data.totalHours, 0)
                                     .toFixed(2)}{" "}
                                 <span className="text-lg font-light">ชั่วโมง</span>
                             </p>
                         </div>
-
-                        <FaRegClock className="h-12 w-12 text-blue-300 dark:text-blue-200" />
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-12 w-12 text-blue-300 dark:text-blue-200"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M3 10h11m0 0l4-4m-4 4l4 4m0-4H3m16 6.25a9 9 0 11-16.5 0 9 9 0 0116.5 0z"
+                            />
+                        </svg>
                     </div>
 
-                    {/* Table */}
-                    {/* Table */}
+
+                    {/* Table     */}
                     <table className="w-full text-sm text-left border-collapse overflow-hidden rounded-lg">
                         <thead className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                             <tr>
@@ -730,131 +602,87 @@ const DashboardContent = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100">
-                            {/* แสดงข้อมูลในแต่ละประเภท */}
-                            {Object.entries(processedData)
-                                .filter(([type]) => selectedTypes.includes(type)) // กรองเฉพาะประเภทที่เลือกในเช็คบ็อกซ์
-                                .map(([type, data]) => (
-                                    <tr
-                                        key={type}
-                                        className={`cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-700 transition-all duration-200 ${selectedType === type ? "bg-blue-50 dark:bg-blue-800" : ""
-                                            }`}
-                                        onClick={() => setSelectedType(type)}
-                                    >
-                                        <td className="py-4 px-6">{type}</td>
-                                        <td className="py-4 px-6">{data.taskCount}</td>
-                                        <td className="py-4 px-6">
-                                            {Math.floor(data.totalHours)} ชม.{" "}
-                                            {Math.round((data.totalHours % 1) * 60)} นาที
-                                        </td>
-                                    </tr>
-                                ))}
-                            {/* เพิ่มแถวสรุปผลรวม */}
-                            <tr className="bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-bold">
+                            {Object.entries(processedData).map(([type, data]) => (
+                                <tr
+                                    key={type}
+                                    className={`cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-700 transition-all duration-200 ${selectedType === type ? "bg-blue-50 dark:bg-blue-800" : ""
+                                        }`}
+                                    onClick={() => setSelectedType(type)}
+                                >
+                                    <td className="py-4 px-6">{type}</td>
+                                    <td className="py-4 px-6">{data.taskCount}</td>
+                                    <td className="py-4 px-6">
+                                        {Math.floor(data.totalHours)} ชม.{" "}
+                                        {Math.round((data.totalHours % 1) * 60)} นาที
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                        <tfoot className="bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 font-bold">
+                            <tr>
                                 <td className="py-4 px-6">Total</td>
                                 <td className="py-4 px-6">
-                                    {Object.entries(processedData)
-                                        .filter(([type]) => selectedTypes.includes(type)) // กรองเฉพาะประเภทที่เลือกในเช็คบ็อกซ์
-                                        .reduce((sum, [, data]) => sum + data.taskCount, 0)}
+                                    {Object.values(processedData).reduce((sum, data) => sum + data.taskCount, 0)}
                                 </td>
                                 <td className="py-4 px-6">
                                     {Math.floor(
-                                        Object.entries(processedData)
-                                            .filter(([type]) => selectedTypes.includes(type)) // กรองเฉพาะประเภทที่เลือกในเช็คบ็อกซ์
-                                            .reduce((sum, [, data]) => sum + data.totalHours, 0)
+                                        Object.values(processedData).reduce((sum, data) => sum + data.totalHours, 0)
                                     )}{" "}
                                     ชม.{" "}
                                     {Math.round(
-                                        (Object.entries(processedData)
-                                            .filter(([type]) => selectedTypes.includes(type)) // กรองเฉพาะประเภทที่เลือกในเช็คบ็อกซ์
-                                            .reduce((sum, [, data]) => sum + data.totalHours, 0) %
+                                        (Object.values(processedData).reduce((sum, data) => sum + data.totalHours, 0) %
                                             1) *
                                         60
                                     )}{" "}
                                     นาที
                                 </td>
                             </tr>
-                        </tbody>
+                        </tfoot>
                     </table>
+
 
 
                 </div>
 
+
+
                 {/* กราฟ */}
                 <div className="col-span-1 lg:col-span-8 bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
-                    <div className="flex justify-between items-center">
-                        <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">
-                            Work Hours Overview
-                        </h2>
 
-                        {/* Checkbox Filters */}
-                        <div className="flex flex-wrap gap-2">
-                            {["daily", "program", "device", "user"].map((type) => (
-                                <label key={type} className="flex items-center space-x-2">
+                    {/* แถบเช็คบ็อกซ์ */}
+                    <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200">
+                            Filter Categories
+                        </h2>
+                        <div className="flex flex-wrap space-x-4">
+                            {['Device', 'Program', 'User', 'Daily'].map((category) => (
+                                <label key={category} className="inline-flex items-center space-x-2">
                                     <input
                                         type="checkbox"
-                                        className="h-4 w-4 text-blue-500 border-gray-300 rounded focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600"
-                                        checked={selectedTypes.includes(type)}
-                                        onChange={() => handleTypeSelection(type)}
+                                        className="form-checkbox h-4 w-4 text-blue-600"
+                                        defaultChecked
+                                        onChange={(e) => toggleCategoryVisibility(category, e.target.checked)}
                                     />
-                                    <span className="text-sm text-gray-800 dark:text-gray-200 capitalize">
-                                        {type}
-                                    </span>
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">{category}</span>
                                 </label>
                             ))}
                         </div>
                     </div>
 
-                    <div className="h-96 mt-6">
+                    {/* กราฟ */}
+                    <div className="h-96 mt-6 flex justify-center items-center px-4 lg:px-10">
                         {workHoursChartData?.datasets?.length > 0 ? (
-                            <Bar
-                                data={{
-                                    ...workHoursChartData,
-                                    datasets: workHoursChartData.datasets.filter((dataset) =>
-                                        selectedTypes.includes(dataset.label.toLowerCase())
-                                    ),
-                                }}
-                                options={{
-                                    responsive: true,
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            position: "top",
-                                            labels: {
-                                                color: isDarkMode ? "#e2e8f0" : "#1a202c",
-                                            },
-                                        },
-                                        datalabels: {
-                                            display: false, // ปิดการแสดงข้อความ
-                                        },
-                                    },
-                                    scales: {
-                                        x: {
-                                            ticks: {
-                                                color: isDarkMode ? "#e2e8f0" : "#1a202c",
-                                            },
-                                        },
-                                        y: {
-                                            beginAtZero: true,
-                                            ticks: {
-                                                color: isDarkMode ? "#e2e8f0" : "#1a202c",
-                                                callback: function (value) {
-                                                    return `${value} ชม.`; // แสดงผลเป็นชั่วโมง
-                                                },
-                                            },
-                                        },
-                                    },
-                                }}
-                            />
+                            <Bar data={workHoursChartData} options={chartOptionsTime(isDarkMode)} />
                         ) : (
-                            <p className="text-gray-500 text-center">
+                            <p className="text-center text-gray-500 dark:text-gray-400">
                                 No data available for the selected period.
                             </p>
                         )}
                     </div>
+
                 </div>
 
             </div>
-
 
 
 
