@@ -3,9 +3,22 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --color-bg: #ffffff;
+  --color-text: #333333;
+  --color-text-secondary: #555555;
+  --color-highlight: #2563eb;
+  --color-active: #10b981;
 }
+
+[data-theme="dark"] {
+  --color-bg: #1f2937;
+  --color-text: #e5e7eb;
+  --color-text-secondary: #9ca3af;
+  --color-highlight: #2563eb;
+  --color-active: #10b981;
+}
+
+
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -96,66 +109,92 @@ option::before {
 
 
 
-
-
-
-.react-calendar {
-  font-family: Arial, sans-serif;
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+/* ธีมแบบสว่าง */
+.react-calendar.light-mode {
+  background-color: #ffffff; /* พื้นหลังสีขาว */
+  color: #1a202c; /* ตัวอักษรสีดำ */
+  border-radius: 10px;
+  border: 1px solid #dcdcdc; /* ขอบ */
+  padding: 10px;
 }
 
-.react-calendar__navigation {
+.react-calendar.light-mode .react-calendar__tile {
+  background-color: transparent;
+  color: #1a202c; /* ตัวเลข */
+}
+/* กำหนดสีวันหยุด (วันเสาร์-อาทิตย์) */
+.react-calendar.light-mode .react-calendar__tile--weekend {
+  color: #e53e3e; /* สีแดง */
+}
+
+.react-calendar.light-mode .react-calendar__tile:hover {
+  background-color: #e2e8f0; /* สี hover */
+}
+
+.react-calendar.light-mode .react-calendar__tile--active {
+  background-color: #4F46E5; /* สีวันที่เลือก */
+  color: #ffffff; /* ตัวอักษร */
+}
+
+/* ธีมแบบมืด */
+.react-calendar.dark-mode {
+  background-color: #2d3748; /* พื้นหลังสีเข้ม */
+  color: #e2e8f0; /* ตัวอักษร */
+  border-radius: 10px;
+  border: 1px solid #374151; /* ขอบ */
+  padding: 10px;
+}
+
+.react-calendar.dark-mode .react-calendar__tile {
+  background-color: transparent;
+  color: #e2e8f0; /* ตัวเลข */
+}
+
+.react-calendar.dark-mode .react-calendar__tile:hover {
+  background-color: #4a5568; /* สี hover */
+}
+
+.react-calendar.dark-mode .react-calendar__tile--active {
+  background-color: #10B981; /* สีวันที่เลือก */
+  color: #2d3748; /* ตัวอักษร */
+}
+
+/* จัดการความสูงของการ์ด */
+.slick-slide > div {
+  height: 450px; /* บังคับให้การ์ดทุกใบมีความสูงเท่ากัน */
+  margin: 0 10px; /* ระยะห่างระหว่างการ์ด */
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 10px;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.react-calendar__navigation button {
-  background: none;
-  border: none;
-  color: #1f2937;
-  font-size: 1rem;
+/* สำหรับ Slider */
+.slick-list {
+  overflow: hidden !important; /* ซ่อนส่วนเกิน */
+  padding: 0 20px; /* ระยะห่างด้านข้าง */
+}
+
+.slick-track {
+  display: flex !important;
+  gap: 15px; /* ระยะห่างระหว่างการ์ด */
+}
+/* วันหยุด (วันเสาร์-อาทิตย์) ธีมแบบสว่าง */
+.react-calendar.light-mode .react-calendar__tile--weekend {
+  color: #e53e3e !important; /* ตัวเลขสีแดง */
+}
+
+/* วันหยุด (วันเสาร์-อาทิตย์) ธีมแบบมืด */
+.react-calendar.dark-mode .react-calendar__tile--weekend {
+  color: #f87171 !important; /* ตัวเลขสีแดง */
+}
+/* วันหยุดตามปฏิทินไทย ธีมแบบสว่าง */
+.react-calendar.light-mode .react-calendar__tile--thai-holiday {
+  color: #e53e3e !important; /* สีแดง */
   font-weight: bold;
-  cursor: pointer;
 }
 
-.react-calendar__navigation button:hover {
-  text-decoration: underline;
-}
-
-.react-calendar__month-view__days__day--neighboringMonth {
-  color: #9ca3af;
-}
-
-.react-calendar__tile {
-  padding: 10px;
-  margin: 5px;
-  border-radius: 8px;
-  background: none;
-  transition: background 0.2s;
-}
-
-.react-calendar__tile--now {
-  background: #f3f4f6;
-  border-radius: 8px;
-}
-
-.react-calendar__tile--active {
-  background: #ef4444;
-  color: white;
-  border-radius: 8px;
-}
-
-.react-calendar__tile:hover {
-  background: #f9fafb;
-  border-radius: 8px;
-}
-
-.highlight-current-date {
-  background-color: #2563eb !important;
-  color: white !important;
-  border-radius: 50%;
+/* วันหยุดตามปฏิทินไทย ธีมแบบมืด */
+.react-calendar.dark-mode .react-calendar__tile--thai-holiday {
+  color: #f87171 !important; /* สีแดงในธีมมืด */
+  font-weight: bold;
 }
