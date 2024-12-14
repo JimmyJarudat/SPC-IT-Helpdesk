@@ -38,6 +38,7 @@ const ITJobSchema = new mongoose.Schema({
     dueDate: { type: Date }, // กำหนดส่ง
     progress: { type: Number, min: 0, max: 100 }, // ความคืบหน้า (เปอร์เซ็นต์)
     attachment:{ type: String }
+    
 },
 
     {

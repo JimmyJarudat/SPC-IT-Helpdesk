@@ -275,14 +275,25 @@ const InProgressTasksContent = () => {
             }
 
             // ตรวจสอบและอัปเดตสถานะงาน
+            const parseDate = (dateString) => {
+                const parsedDate = new Date(dateString);
+                if (isNaN(parsedDate)) {
+                    console.error("Invalid date format:", dateString);
+                    return null;
+                }
+                return parsedDate;
+            };
+
             let updatedStatus = selectedTask.status;
-            if (selectedTask.status === "completed") {
-                const dueDate = new Date(selectedTask.dueDate);
-                const completedDate = new Date(selectedTask.completionDate);
-                if (completedDate > dueDate) {
+            if (selectedTask.status === "completed" && selectedTask.dueDate && selectedTask.completionDate) {
+                const dueDate = parseDate(selectedTask.dueDate);
+                const completedDate = parseDate(selectedTask.completionDate);
+
+                if (dueDate && completedDate && completedDate > dueDate) {
                     updatedStatus = "completed_Late"; // เปลี่ยนเป็น completed_Late
                 }
             }
+
 
             // คำนวณ processTime
             const processTime = calculateProcessTime(selectedTask.createdAt, completionDate);
@@ -662,6 +673,7 @@ const InProgressTasksContent = () => {
                                     </label>
                                 </div>
                             </div>
+                            
 
 
                             {/* Form บันทึกเวลา */}

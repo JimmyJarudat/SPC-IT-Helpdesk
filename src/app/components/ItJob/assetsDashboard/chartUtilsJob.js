@@ -190,9 +190,10 @@ export const processChartData = (jobs, activeFilter, date, isDarkMode, adjustTim
         };
        
     }
+
     return chartData;
 };
-export const chartOptions = (isDarkMode) => ({
+export const chartOptions = (isDarkMode, maxValue) => ({
     responsive: true,
     maintainAspectRatio: true,
     plugins: {
@@ -263,6 +264,7 @@ export const chartOptions = (isDarkMode) => ({
       },
       y: {
         beginAtZero: true,
+        suggestedMax: Math.ceil((maxValue / 0.8) / 5) * 5,
         ticks: {
           color: isDarkMode ? "#e2e8f0" : "#1a202c", // สีข้อความแกน Y
           stepSize: 5,
