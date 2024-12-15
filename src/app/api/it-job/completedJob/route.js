@@ -7,7 +7,8 @@ export async function GET(req) {
         await dbConnect();
 
         const { searchParams } = new URL(req.url);
-        const fullName = searchParams.get("fullName"); // ดึงชื่อผู้ใช้งานจาก query
+        const fullName = searchParams.get("fullName");
+        const nickName = searchParams.get("nickName"); // ดึงชื่อผู้ใช้งานจาก query
         const page = parseInt(searchParams.get("page")) || 1;
         const limit = parseInt(searchParams.get("limit")) || 20;
         let startDate = searchParams.get("startDate");
@@ -38,13 +39,17 @@ export async function GET(req) {
 
         // กำหนด Filters
         const filters = {
-            nameJob_owner: fullName, // กรองเฉพาะงานที่ `nameJob_owner` ตรงกับ `fullName`
-            status: { $in: ["completed", "completed_Late"] },
+            $or: [
+                { nameJob_owner: fullName }, // เงื่อนไขที่ 1: ตรงกับ fullName
+                { nicknameJob_owner: nickName }, // เงื่อนไขที่ 2: ตรงกับ nickName
+            ],
+            status: { $in: ["completed", "completed_Late"] }, // เงื่อนไขสถานะ
             createdAt: {
-                $gte: new Date(startDate),
-                $lte: new Date(endDate),
+                $gte: new Date(startDate), // วันที่เริ่มต้น
+                $lte: new Date(endDate),   // วันที่สิ้นสุด
             },
         };
+        
 
         
         if (searchParams.get("search")) {

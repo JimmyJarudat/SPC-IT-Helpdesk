@@ -826,8 +826,9 @@ const DashboardContent = () => {
 
             </div>
 
-
+            
             {/*กราฟชั่วโมงทำงาน*/}
+            {tasks.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
                 {/* ตารางประเภทงาน */}
                 <div className="col-span-1 lg:col-span-4 bg-gradient-to-br from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-xl p-6">
@@ -970,8 +971,10 @@ const DashboardContent = () => {
                     </div>
                 </div>
             </div>
+            )}
 
             {/* กราฟสถานะ */}
+            {tasks.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mt-6">
                 {/* Task Status Overview */}
                 <div className="col-span-1 lg:col-span-6 bg-gradient-to-r from-white to-gray-100 dark:from-gray-800 dark:to-gray-900 rounded-2xl shadow-xl p-6 relative flex flex-col justify-between">
@@ -1099,9 +1102,11 @@ const DashboardContent = () => {
 
                 </div>
             </div>
+            )}
 
 
             {/* Top Reporters */}
+            {tasks.length > 0 && (
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 {/* Top Reporters */}
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col">
@@ -1206,6 +1211,7 @@ const DashboardContent = () => {
                     </div>
                 </div>
             </div>
+            )}
 
             {isModalOpen && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

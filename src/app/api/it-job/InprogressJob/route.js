@@ -9,6 +9,8 @@ export async function GET(req) {
         console.log("Database connected");
 
         const fullName = req.nextUrl.searchParams.get("fullName");
+        const nickName = req.nextUrl.searchParams.get("nickName");
+
 
         if (!fullName) {
             return NextResponse.json(
@@ -20,7 +22,10 @@ export async function GET(req) {
         // ดึงข้อมูลงานที่มีสถานะ in_progress
         const inProgressJobs = await ITJob.find({
             status: "in_progress",
-            nameJob_owner: fullName
+            $or: [
+                { nameJob_owner: fullName }, // เงื่อนไขที่ 1: ตรงกับ fullName
+                { nicknameJob_owner: nickName }, // เงื่อนไขที่ 2: ตรงกับ nickName
+            ],
         }).sort({ jobID: -1 });;
 
         // ตรวจสอบว่าพบงานหรือไม่

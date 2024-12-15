@@ -1,8 +1,10 @@
 "use client";
-
+import ExcelJS from "exceljs";
+import { saveAs } from 'file-saver';
 import { useState, useEffect } from "react";
 import { getColorFromTheme } from '@/utils/colorMapping';
 import { useTheme } from "@/contexts/ThemeContext";
+
 
 import { FaCheck } from "react-icons/fa";
 import { FaTimes, FaMapMarkerAlt, FaUser, FaClock, FaCheckCircle } from "react-icons/fa";
@@ -35,6 +37,132 @@ const AllTasksContent = () => {
 
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
+    const [cxcelExport, setExcelExport] = useState([]);
+
+
+    const adjustTimezone = (date) => {
+        const timezoneOffset = date.getTimezoneOffset() * 60000; // คำนวณ timezone offset (ms)
+        return new Date(date.getTime() - timezoneOffset); // ปรับเวลาตาม timezone
+    };
+
+
+
+    const fetchAllTasksForExport = async (updatedFilters) => {
+        setExcelExport([]); // รีเซ็ตค่า cxcelExport
+        showLoading(); // แสดง Spinner
+        try {
+            const params = new URLSearchParams({
+                startDate: updatedFilters.startDate,
+                endDate: updatedFilters.endDate,
+                sort: updatedFilters.sort || "createdAt",
+                order: updatedFilters.order || "desc",
+            });
+
+            const response = await fetch(`/api/it-job/excelExport?${params.toString()}`);
+            const data = await response.json(); // แปลงเป็น JSON
+
+            if (response.ok && data.success) {
+                setExcelExport(data.data); // เซ็ตข้อมูลใหม่ลงใน cxcelExport
+                return data.data; // ส่งข้อมูลกลับ
+            } else {
+                console.warn("No data available or invalid response format:", data.message);
+                setExcelExport([]); // เซ็ตเป็น array ว่างหากไม่มีข้อมูล
+                return [];
+            }
+        } catch (error) {
+            console.error("Unexpected error:", error.message);
+            setExcelExport([]); // เซ็ตเป็น array ว่างหากเกิดข้อผิดพลาด
+            return [];
+        } finally {
+            hideLoading(); // ซ่อน Spinner
+        }
+    };
+
+
+    const exportToTemplate = async () => {
+        try {
+            if (!cxcelExport || cxcelExport.length === 0) {
+                console.error("No data available for export");
+                alert("ไม่มีข้อมูลสำหรับ Export");
+                return;
+            }
+
+            // โหลดไฟล์ Template
+            const response = await fetch("/report/Report_WORK_IT.xlsx");
+            const arrayBuffer = await response.arrayBuffer();
+
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+
+            const worksheet = workbook.getWorksheet("job");
+            if (!worksheet) {
+                console.error("Worksheet not found in the template");
+                return;
+            }
+
+            let startRow = 4;
+
+            // จัดเรียงข้อมูล tasks ตาม createdAt (จากน้อยไปมาก)
+            const sortedTasks = cxcelExport.sort((a, b) => {
+                return new Date(a.createdAt) - new Date(b.createdAt);
+            });
+
+            // จัดรูปแบบข้อมูลและเขียนลงในแถว
+            sortedTasks.forEach((task, index) => {
+                const row = worksheet.getRow(startRow + index);
+                row.getCell(1).value = task.createdAt
+                    ? new Date(task.createdAt).toISOString().split("T")[0].replace(/-/g, "/")
+                    : "N/A"; // วันที่
+                row.getCell(2).value = index + 1; // ลำดับที่
+                row.getCell(3).value = task.createdAt
+                    ? new Date(task.createdAt)
+                        .toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false })
+                        .replace(":", ".")
+                    : "N/A";
+                row.getCell(4).value = task.nickName || "N/A"; // ผู้แจ้ง
+                row.getCell(5).value = task.department || "N/A"; // แผนก
+                row.getCell(6).value = task.jobName || "N/A"; // อาการเสีย
+                row.getCell(7).value = task.resolution_notes || "N/A"; // การแก้ไข
+                row.getCell(8).value = task.status === "completed" ? "เสร็จสิ้น" : task.status === "in_progress" ? "กำลังดำเนินการ" : "รอดำเนินการ";
+                row.getCell(9).value = task.completionDate
+                    ? new Date(task.completionDate)
+                        .toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false })
+                        .replace(":", ".")
+                    : "N/A";
+                row.getCell(10).value = task.nicknameJob_owner || "N/A"; // ผู้ทำงาน
+                row.getCell(11).value = task.category === "device" ? 1 : ""; // อุปกรณ์
+                row.getCell(12).value = task.category === "program" ? 1 : ""; // โปรแกรม
+                row.getCell(13).value = ["user", "daily"].includes(task.category) ? 1 : ""; // ผู้ใช้งาน
+                row.getCell(14).value = (() => {
+                    if (!task.processTime || task.processTime.trim() === "") {
+                        return 0;
+                    }
+
+                    const hoursMatch = task.processTime.match(/(\d+)\s?ชั่วโมง/);
+                    const minutesMatch = task.processTime.match(/(\d+)\s?นาที/);
+
+                    const hours = hoursMatch ? parseInt(hoursMatch[1], 10) : 0;
+                    const minutes = minutesMatch ? parseInt(minutesMatch[1], 10) : 0;
+
+                    return (hours / 24) + (minutes / 1440); // เวลาใน Excel Format
+                })();
+
+                row.commit(); // บันทึกข้อมูลในแถว
+            });
+
+            const buffer = await workbook.xlsx.writeBuffer();
+            saveAs(new Blob([buffer]), "Updated_Report_WORK_IT.xlsx");
+        } catch (error) {
+            console.error("Error exporting to template:", error);
+        }
+    };
+    const handleFilterChange = (e) => {
+        setFilters((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value,
+        }));
+    };
+
 
     const handleViewDetails = (task) => {
         setSelectedTask(task); // เก็บข้อมูลงานที่เลือก
@@ -45,9 +173,6 @@ const AllTasksContent = () => {
         setModalOpen(false); // ปิด Modal
         setSelectedTask(null); // รีเซ็ตข้อมูลงาน
     };
-
-
-
 
 
 
@@ -87,6 +212,13 @@ const AllTasksContent = () => {
     };
 
     useEffect(() => {
+        // เมื่อ filters.startDate หรือ filters.endDate เปลี่ยน ให้ fetch ข้อมูลใหม่ทันที
+        if (filters.startDate && filters.endDate) {
+            fetchAllTasksForExport(filters); // ส่ง filters ล่าสุด
+        }
+    }, [filters]);
+
+    useEffect(() => {
         fetchTasks();
     }, [sortOption, currentPage, filters]);
 
@@ -110,9 +242,6 @@ const AllTasksContent = () => {
         }
     };
 
-    const handleFilterChange = (e) => {
-        setFilters({ ...filters, [e.target.name]: e.target.value });
-    };
 
     const resetFilters = () => {
         setFilters({ startDate: "", endDate: "" });
@@ -172,7 +301,7 @@ const AllTasksContent = () => {
                         handleFilterChange({
                             target: {
                                 name: "startDate",
-                                value: date ? date.toISOString().split("T")[0] : "", // ตัดเวลาออก เหลือแค่ YYYY-MM-DD
+                                value: date ? adjustTimezone(date).toISOString().split("T")[0] : "", // ปรับ timezone ก่อนแปลง
                             },
                         })
                     }
@@ -183,14 +312,13 @@ const AllTasksContent = () => {
                     yearDropdownItemNumber={24}
                     scrollableYearDropdown
                 />
-
                 <DatePicker
                     selected={filters.endDate ? new Date(filters.endDate) : null}
                     onChange={(date) =>
                         handleFilterChange({
                             target: {
                                 name: "endDate",
-                                value: date ? date.toISOString().split("T")[0] : "", // ตัดเวลาออก เหลือแค่ YYYY-MM-DD
+                                value: date ? adjustTimezone(date).toISOString().split("T")[0] : "", // ปรับ timezone ก่อนแปลง
                             },
                         })
                     }
@@ -201,6 +329,7 @@ const AllTasksContent = () => {
                     yearDropdownItemNumber={24}
                     scrollableYearDropdown
                 />
+
 
                 <select
                     value={categoryFilter}
@@ -242,6 +371,22 @@ const AllTasksContent = () => {
                 >
                     ล้างตัวกรอง
                 </button>
+
+                <div className="">
+                    <button
+                        onClick={async () => {
+                            if (cxcelExport.length > 0) {
+                                exportToTemplate();
+                            } else {
+                                alert("ไม่มีข้อมูลสำหรับ Export");
+                            }
+                        }}
+                        className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 focus:outline-none shadow-lg"
+                    >
+                        Export to Excel
+                    </button>
+                </div>
+
             </div>
 
 
@@ -326,16 +471,24 @@ const AllTasksContent = () => {
                                     <td
                                         className="relative group border border-gray-300 dark:border-gray-600 text-center align-middle"
                                     >
-                                        {new Date(task.completionDate).toLocaleDateString("en-GB")}
-                                        <span
-                                            className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:inline-block bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg whitespace-nowrap"
-                                        >
-                                            {new Date(task.completionDate).toLocaleTimeString("th-TH", {
-                                                hour: "2-digit",
-                                                minute: "2-digit",
-                                            })} น.
-                                        </span>
+                                        {/* ตรวจสอบว่ามีค่า completionDate */}
+                                        {task.completionDate ? (
+                                            <>
+                                                {/* แสดงวันที่ */}
+                                                {new Date(task.completionDate).toLocaleDateString("en-GB")}
+                                                {/* Tooltip ที่แสดงเวลาเมื่อ hover */}
+                                                <span
+                                                    className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 hidden group-hover:inline-block bg-gray-800 text-white text-xs py-1 px-2 rounded shadow-lg whitespace-nowrap"
+                                                >
+                                                    {new Date(task.completionDate).toLocaleTimeString("th-TH", {
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                    })} น.
+                                                </span>
+                                            </>
+                                        ) : null}
                                     </td>
+
                                     <td className="border border-gray-300 dark:border-gray-600  text-center align-middle">
                                         <span
                                             className={`${task.status === "pending"

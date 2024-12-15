@@ -159,9 +159,7 @@ const InProgressTasksContent = () => {
         const fetchPendingTasks = async () => {
             showLoading();
             try {
-
-
-                const response = await fetch(`/api/it-job/InprogressJob?fullName=${encodeURIComponent(user.fullName)}`);
+                const response = await fetch(`/api/it-job/InprogressJob?fullName=${encodeURIComponent(user.fullName)}&nickName=${encodeURIComponent(user.nickName)}`);
                 const data = await response.json();
                 if (data.success) {
                     // ตรวจสอบให้แน่ใจว่า data.data เป็น array

@@ -36,6 +36,12 @@ const CompletedTasksContent = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
 
+    const adjustTimezone = (date) => {
+        const timezoneOffset = date.getTimezoneOffset() * 60000; // คำนวณ timezone offset (ms)
+        return new Date(date.getTime() - timezoneOffset); // ปรับเวลาตาม timezone
+    };
+    
+
     const handleViewDetails = (task) => {
         setSelectedTask(task); // เก็บข้อมูลงานที่เลือก
         setModalOpen(true); // เปิด Modal
@@ -54,6 +60,7 @@ const CompletedTasksContent = () => {
         try {
             const params = new URLSearchParams({
                 fullName: user.fullName, // ส่งชื่อผู้ใช้งานไปที่ API
+                nickName: user.nickName,
                 page: currentPage,
                 limit: itemsPerPage,
                 sort: sortOption,
@@ -180,7 +187,7 @@ const CompletedTasksContent = () => {
                         handleFilterChange({
                             target: {
                                 name: "startDate",
-                                value: date ? date.toISOString().split("T")[0] : "", // ตัดเวลาออก เหลือแค่ YYYY-MM-DD
+                                value: date ? adjustTimezone(date).toISOString().split("T")[0] : "", // ปรับ timezone ก่อนแปลง
                             },
                         })
                     }
@@ -191,14 +198,13 @@ const CompletedTasksContent = () => {
                     yearDropdownItemNumber={24}
                     scrollableYearDropdown
                 />
-
                 <DatePicker
                     selected={filters.endDate ? new Date(filters.endDate) : null}
                     onChange={(date) =>
                         handleFilterChange({
                             target: {
                                 name: "endDate",
-                                value: date ? date.toISOString().split("T")[0] : "", // ตัดเวลาออก เหลือแค่ YYYY-MM-DD
+                                value: date ? adjustTimezone(date).toISOString().split("T")[0] : "", // ปรับ timezone ก่อนแปลง
                             },
                         })
                     }
@@ -209,6 +215,7 @@ const CompletedTasksContent = () => {
                     yearDropdownItemNumber={24}
                     scrollableYearDropdown
                 />
+
 
                 <select
                     value={categoryFilter}
