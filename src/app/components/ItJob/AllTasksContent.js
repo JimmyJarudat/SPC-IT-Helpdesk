@@ -23,7 +23,6 @@ const AllTasksContent = () => {
     const { theme } = useTheme();
     const [tasks, setTasks] = useState([]);
     const [pagination, setPagination] = useState({ page: 1, totalPages: 1 });
-    const [filters, setFilters] = useState({ startDate: "", endDate: "" });
     const { loading, showLoading, hideLoading } = useLoading();
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -38,6 +37,17 @@ const AllTasksContent = () => {
     const [isModalOpen, setModalOpen] = useState(false);
     const [selectedTask, setSelectedTask] = useState(null);
     const [cxcelExport, setExcelExport] = useState([]);
+
+
+    const now = new Date();
+    const initialStartDate = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString("en-CA"); // รูปแบบ YYYY-MM-DD
+    const initialEndDate = new Date(now.getFullYear(), now.getMonth() + 1, 0).toLocaleDateString("en-CA"); // รูปแบบ YYYY-MM-DD
+
+    const [filters, setFilters] = useState({
+        startDate: initialStartDate,
+        endDate: initialEndDate,
+    });
+
 
 
     const adjustTimezone = (date) => {
@@ -122,14 +132,14 @@ const AllTasksContent = () => {
                 row.getCell(4).value = task.nickName || "N/A"; // ผู้แจ้ง
                 row.getCell(5).value = task.department || "N/A"; // แผนก
                 row.getCell(6).value = task.jobName || "N/A"; // อาการเสีย
-                row.getCell(7).value = task.resolution_notes || "N/A"; // การแก้ไข
+                row.getCell(7).value = task.resolution_notes || ""; // การแก้ไข
                 row.getCell(8).value = task.status === "completed" ? "เสร็จสิ้น" : task.status === "in_progress" ? "กำลังดำเนินการ" : "รอดำเนินการ";
                 row.getCell(9).value = task.completionDate
                     ? new Date(task.completionDate)
                         .toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit", hour12: false })
                         .replace(":", ".")
-                    : "N/A";
-                row.getCell(10).value = task.nicknameJob_owner || "N/A"; // ผู้ทำงาน
+                    : "";
+                row.getCell(10).value = task.nicknameJob_owner || ""; // ผู้ทำงาน
                 row.getCell(11).value = task.category === "device" ? 1 : ""; // อุปกรณ์
                 row.getCell(12).value = task.category === "program" ? 1 : ""; // โปรแกรม
                 row.getCell(13).value = ["user", "daily"].includes(task.category) ? 1 : ""; // ผู้ใช้งาน
@@ -149,6 +159,20 @@ const AllTasksContent = () => {
 
                 row.commit(); // บันทึกข้อมูลในแถว
             });
+
+
+            // สรุปจำนวนงานประเภท daily และ user
+            const dailyTasks = sortedTasks.filter((task) => task.category === "daily").length;
+            const userTasks = sortedTasks.filter((task) => task.category === "user").length;
+
+            // เพิ่มข้อมูลสรุปลงในแถวที่ 307 คอลัม M และแถวที่ 308 คอลัม N
+            worksheet.getRow(307).getCell(13).value = userTasks; // แถว 307 คอลัม M
+            worksheet.getRow(308).getCell(12).value = dailyTasks; // แถว 308 คอลัม N
+
+            worksheet.getRow(307).commit();
+            worksheet.getRow(308).commit();
+
+
 
             const buffer = await workbook.xlsx.writeBuffer();
             saveAs(new Blob([buffer]), "Updated_Report_WORK_IT.xlsx");
@@ -244,14 +268,22 @@ const AllTasksContent = () => {
 
 
     const resetFilters = () => {
-        setFilters({ startDate: "", endDate: "" });
-        setSortOption("desc"),
-            setCategoryFilter("");
-        setStatusFilter("");
-        setSearchQuery("");
-        setCurrentPage(1); // รีเซ็ตหน้าให้กลับไปเริ่มต้น
-        fetchTasks(); // เรียกข้อมูลใหม่
+        const now = new Date();
+        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toLocaleDateString("en-CA");
+        const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toLocaleDateString("en-CA");
+
+        setFilters({
+            startDate: firstDayOfMonth, // ค่าเริ่มต้นวันที่แรกของเดือน
+            endDate: lastDayOfMonth,   // ค่าเริ่มต้นวันที่สุดท้ายของเดือน
+        });
+        setSortOption("desc"); // รีเซ็ตตัวเลือกการจัดเรียง
+        setCategoryFilter(""); // รีเซ็ตหมวดหมู่
+        setStatusFilter("");   // รีเซ็ตสถานะ
+        setSearchQuery("");    // รีเซ็ตการค้นหา
+        setCurrentPage(1);     // รีเซ็ตหน้าแรก
+        fetchTasks();          // เรียกข้อมูลใหม่
     };
+
 
 
     return (
@@ -286,8 +318,8 @@ const AllTasksContent = () => {
 
 
 
-            {/* ตัวกรอง */}
-            <div className="mb-6 flex flex-wrap gap-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow">
+            <div className="mb-6 flex flex-wrap gap-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg shadow relative">
+                {/* Input สำหรับค้นหา */}
                 <input
                     type="text"
                     placeholder="🔍 ค้นหา (เช่น เลขที่งาน, ชื่องาน, ผู้แจ้ง)"
@@ -295,6 +327,7 @@ const AllTasksContent = () => {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="border px-4 py-2 rounded-lg w-full sm:w-1/3 focus:ring focus:ring-blue-300 dark:bg-gray-800 dark:text-white dark:border-gray-600"
                 />
+                {/* DatePicker สำหรับวันที่เริ่มต้นและสิ้นสุด */}
                 <DatePicker
                     selected={filters.startDate ? new Date(filters.startDate) : null}
                     onChange={(date) =>
@@ -329,8 +362,7 @@ const AllTasksContent = () => {
                     yearDropdownItemNumber={24}
                     scrollableYearDropdown
                 />
-
-
+                {/* Select ตัวกรองประเภทงาน */}
                 <select
                     value={categoryFilter}
                     onChange={(e) => setCategoryFilter(e.target.value)}
@@ -343,6 +375,7 @@ const AllTasksContent = () => {
                     <option value="daily">🌐 Daily</option>
                 </select>
 
+                {/* Select ตัวกรองสถานะงาน */}
                 <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
@@ -355,6 +388,7 @@ const AllTasksContent = () => {
                     <option value="pending">⏳ Pending</option>
                 </select>
 
+                {/* Select ตัวเลือกการเรียง */}
                 <select
                     value={sortOption}
                     onChange={(e) => setSortOption(e.target.value)}
@@ -372,7 +406,8 @@ const AllTasksContent = () => {
                     ล้างตัวกรอง
                 </button>
 
-                <div className="">
+                {/* ปุ่ม Export to Excel */}
+                <div className="absolute bottom-4 right-4">
                     <button
                         onClick={async () => {
                             if (cxcelExport.length > 0) {
@@ -386,7 +421,6 @@ const AllTasksContent = () => {
                         Export to Excel
                     </button>
                 </div>
-
             </div>
 
 
