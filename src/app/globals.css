@@ -101,6 +101,16 @@ option::before {
 }
 
 
+/* เพิ่มในไฟล์ CSS */
+table {
+  box-sizing: border-box;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+td {
+  box-sizing: border-box;
+}
 
 
 

@@ -1,27 +1,11 @@
-"use client";
+import React from 'react'
 
-
-
-
-
-
-
-import { useUser } from "@/contexts/UserContext";
-import { useEffect } from "react";
-
-export default function AnotherPage() {
-  const { fetchProfile, user, isLoading } = useUser();  // นำเข้า fetchProfile จาก context
-
-  
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
+const page = () => {
   return (
     <div>
-      <h1>Welcome, {user?.fullName}</h1>
-      {/* แสดงข้อมูลโปรไฟล์หรือรูปภาพ */}
+      
     </div>
-  );
+  )
 }
+
+export default page

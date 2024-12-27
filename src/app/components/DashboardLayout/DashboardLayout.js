@@ -18,7 +18,7 @@ const DashboardLayout = ({ children }) => {
     <div className="flex h-screen">
       {/* Sidebar */}
       
-      {user?.role === "admin" ? <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} /> : <UserSidebar />}
+      {user?.role === "admin" || user?.role === "superadmin" ? <Sidebar activeMenu={activeMenu} setActiveMenu={setActiveMenu} /> : <UserSidebar />}
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Navbar */}

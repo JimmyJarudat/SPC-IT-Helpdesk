@@ -172,7 +172,7 @@ export default function Navbar() {
                         className="flex items-center space-x-3 focus:outline-none"
                     >
                         <Image
-                            src={formData.profileImage || "/files/profile-images/placeholder.png"}
+                            src={formData.profileImage || "/placeholder.png"}
                             alt="User Avatar"
                             className="w-10 h-10 rounded-full"
                             width={100}  // อัตราส่วนที่ต้องการ

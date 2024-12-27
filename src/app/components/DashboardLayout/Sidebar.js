@@ -10,7 +10,10 @@ import {
   FaPlus,
   FaChevronDown,
   FaChevronRight,
+  FaUserCog,
 } from "react-icons/fa";
+import { MdOutlinePendingActions } from "react-icons/md";
+import { SiProgress } from "react-icons/si";
 import Image from "next/image";
 import { useTheme } from "@/contexts/ThemeContext";
 import Link from "next/link";
@@ -51,6 +54,9 @@ export default function Sidebar() {
         case pathname.includes("/it-job"):
           setActiveItem("JOB");
           break;
+        case pathname.includes("/user-management"):
+          setActiveItem("User Management");
+          break;
         default:
           setActiveItem(""); // Clear active if no matching path
       }
@@ -59,19 +65,16 @@ export default function Sidebar() {
 
 
   const jobMenuItems = [
-    { name: "Dash Board", icon: FaPlus },
+    { name: "Dash Board", icon: FaTachometerAlt },
     { name: "Create JOB", icon: FaPlus },
-    { name: "Pending Tasks", icon: FaClipboardList },
-    { name: "In Progress Tasks", icon: FaTasks },
+    { name: "Pending Tasks", icon: MdOutlinePendingActions },
+    { name: "In Progress Tasks", icon: SiProgress },
     { name: "Completed Tasks", icon: FaCheckCircle },
     { name: "All Tasks", icon: FaClipboardList },
   ];
 
   const renderJobSubmenu = () => {
-    if (
-      activeItem === "JOB" || 
-      (jobMenuItems.some((menu) => menu.name === activeItem) && isSidebarOpen)
-    ) {
+    if (isSidebarOpen) {
       return (
         isJobMenuOpen && (
           <ul className="mt-2 space-y-1 pl-6">
@@ -83,19 +86,19 @@ export default function Sidebar() {
                     setActiveMenu(menu.name);
                     setActiveItem(menu.name);
                   }}
-                  className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${
-                    activeItem === menu.name
-                      ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
-                      : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
-                  }`}
+                  className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
+                    } text-white`
+                    : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
+                    } hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
+                    }`}
                 >
                   <menu.icon
                     size={18}
-                    className={`${
-                      activeItem === menu.name
-                        ? "text-white"
-                        : "text-gray-700 dark:text-gray-400"
-                    }`}
+                    className={`${activeItem === menu.name
+                      ? "text-white"
+                      : "text-gray-700 dark:text-gray-400"
+                      }`}
                   />
                   <span className="ml-4 text-sm font-semibold">{menu.name}</span>
                 </a>
@@ -104,10 +107,9 @@ export default function Sidebar() {
           </ul>
         )
       );
-    } else if (activeItem === "JOB" || 
-      (jobMenuItems.some((menu) => menu.name === activeItem) && !isSidebarOpen)) {
+    } else {
       return (
-        <div className="absolute left-full top-1 mt-[135px] z-50 hidden group-hover:block transition-all duration-300">
+        <div className="absolute left-full top-1 mt-[120px] z-50 hidden group-hover:block transition-all duration-300">
           <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs rounded shadow-lg p-2">
             <ul className="py-2 whitespace-nowrap">
               {jobMenuItems.map((menu, index) => (
@@ -118,11 +120,10 @@ export default function Sidebar() {
                     setActiveMenu(menu.name);
                     setActiveItem(menu.name);
                   }}
-                  className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${
-                    activeItem === menu.name
-                      ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
-                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white"
-                  }`}
+                  className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white"
+                    }`}
                 >
                   {menu.name}
                 </li>
@@ -132,13 +133,12 @@ export default function Sidebar() {
         </div>
       );
     }
-    return null;
   };
-  
+
 
   return (
     <div
-      className={`bg-white-50 dark:bg-gray-900 h-screen transition-all duration-300 flex flex-col overflow-visible relative ${isSidebarOpen ? "w-64" : "w-16"
+      className={`  bg-white-50 dark:bg-gray-900 h-screen transition-all duration-300 flex flex-col overflow-visible relative ${isSidebarOpen ? "w-64" : "w-16"
         }`}
     >
       {/* Logo Section */}
@@ -148,7 +148,7 @@ export default function Sidebar() {
       >
         <Link href="/">
           <Image
-            src="/asset/png/bg-spc.png"
+            src="/asset/png/bg-j.ico"
             alt="Company Logo"
             width={40}
             height={40}
@@ -158,7 +158,7 @@ export default function Sidebar() {
         {isSidebarOpen && (
           <Link href="/">
             <span className="ml-4 text-gray-800 dark:text-gray-200 text-xl font-bold">
-              Supornchai
+              Jarudat
             </span>
           </Link>
         )}
@@ -201,7 +201,7 @@ export default function Sidebar() {
       </ul>
 
       {/* JOB Menu */}
-      <ul className="flex-1 flex flex-col justify-start items-stretch space-y-2 mt-4 group">
+      <ul className=" flex flex-col justify-start items-stretch space-y-2 mt-2 group">
         <li>
           <div
             onClick={() => {
@@ -259,6 +259,41 @@ export default function Sidebar() {
 
           {/* Render JOB submenu */}
           {renderJobSubmenu()}
+        </li>
+      </ul>
+
+      <ul className="flex flex-col space-y-2 mt-2">
+        <li>
+          <Link href="/user-management">
+            <div
+              onClick={() => {
+                handleMenuClick("/user-management");
+                setActiveMenu("User Management"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                setActiveItem("User Management");
+              }}
+              className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
+                } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "User Management"
+                  ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                  : `text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700`
+                }`}
+            >
+              <FaUserCog
+                onClick={() => {
+                  handleMenuClick("/user-management");
+                  setActiveMenu("User Management"); // อัปเดต activeMenu สำหรับเมนูหลัก
+                  setActiveItem("User Management");
+                }}
+                size={20}
+                className={`${activeItem === "User Management"
+                  ? "text-white"
+                  : "text-gray-700 dark:text-gray-400"
+                  }`}
+              />
+              {isSidebarOpen && (
+                <span className="ml-4 text-sm font-semibold">User Management</span>
+              )}
+            </div>
+          </Link>
         </li>
       </ul>
 

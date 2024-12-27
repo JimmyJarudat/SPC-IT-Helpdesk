@@ -16,13 +16,34 @@ export async function POST(req) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    // ตรวจสอบการพยายามเข้าสู่ระบบผิดพลาด
+    const now = new Date();
+    if (user.failedLoginAttempts >= 3 && now - user.lastFailedLogin < 5 * 60 * 1000) {
+      // หากมีการพยายามผิดพลาดเกิน 3 ครั้งและยังไม่ครบ 5 นาที
+      return NextResponse.json({ message: 'กรุณาลองใหม่ใน 5 นาที' }, { status: 400 }); // แจ้ง UI ว่าให้รอ
     }
 
-    user.password = undefined; // ลบฟิลด์ password ออกจาก Response
+    // ตรวจสอบรหัสผ่าน
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      // อัปเดตจำนวนครั้งที่พยายามเข้าสู่ระบบผิดพลาด
+      user.failedLoginAttempts = user.failedLoginAttempts + 1;
+      user.lastFailedLogin = now;
+      await user.save(); // บันทึกการพยายามผิดพลาด
 
+      return NextResponse.json({ message: 'รหัสผ่านไม่ถูกต้อง' }, { status: 400 }); // แจ้ง UI ว่ารหัสผิด
+    }
+
+    // รีเซ็ตการพยายามผิดพลาดหากล็อกอินสำเร็จ
+    user.failedLoginAttempts = 0;
+
+    // อัปเดตเวลาล็อกอินล่าสุด
+    user.lastLogin = now;
+    user.online = true;
+    user.lastActivityTime = now; // อัปเดตเวลาล่าสุดที่ผู้ใช้ทำกิจกรรม
+    await user.save();
+
+    user.password = undefined; // ลบฟิลด์ password ออกจาก Response
     const token = jwt.sign({
       id: user._id,
       fullName: user.fullName,

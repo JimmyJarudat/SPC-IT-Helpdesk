@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '../../contexts/UserContext';
 import { useRouter } from 'next/navigation';
+
 
 const LoginPage = () => {
   const [username, setUsername] = useState('');
@@ -25,18 +26,60 @@ const LoginPage = () => {
   const router = useRouter(); // ใช้สำหรับเปลี่ยนเส้นทาง
   const [isLogin, setIsLogin] = useState(true); // Toggle ระหว่าง Login และ Sign Up
 
+  const [failedLoginAttempts, setFailedLoginAttempts] = useState(0); // จำนวนครั้งที่ล็อกอินผิด
+  const [lockTime, setLockTime] = useState(null); // เวลาเมื่อผู้ใช้ถูกล็อก
+  const [timeLeft, setTimeLeft] = useState(0); // เวลาในการนับถอยหลัง
 
-  // ฟังก์ชันสำหรับ Login
+
+  useEffect(() => {
+    if (failedLoginAttempts >= 3) {
+      const unlockTime = new Date().getTime() + 5 * 60 * 1000; // ตั้งเวลาให้ล็อกอินใหม่ได้ใน 5 นาที
+      setLockTime(unlockTime);
+    }
+  }, [failedLoginAttempts]);
+
+  useEffect(() => {
+    let interval;
+    if (lockTime) {
+      interval = setInterval(() => {
+        const remainingTime = lockTime - new Date().getTime();
+        setTimeLeft(remainingTime);
+
+        if (remainingTime <= 0) {
+          clearInterval(interval);
+          setFailedLoginAttempts(0); // รีเซ็ตจำนวนครั้งที่ล็อกอินผิด
+        }
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [lockTime]);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      setError(null);
-      await login(username, password);
+      setError(null);  // รีเซ็ตข้อผิดพลาดก่อน
+      await login(username, password);  // ลองทำการล็อกอิน
       router.push('/overview');
-    } catch (err) {
-      setError('Invalid username or password. Please try again.');
+    } catch (error) {
+      setError(error.message);  // แสดงข้อความข้อผิดพลาดจาก `login`
+      setFailedLoginAttempts(prev => prev + 1); // เพิ่มจำนวนครั้งที่ล็อกอินผิด
+
+      if (failedLoginAttempts + 1 >= 3) {
+        // เมื่อครบ 3 ครั้ง จะตั้งเวลาให้ล็อกอินใหม่ได้ใน 5 นาที
+        const unlockTime = new Date().getTime() + 5 * 60 * 1000;
+        setLockTime(unlockTime);
+      }
     }
   };
+
+  const handleCloseModal = () => {
+    setLockTime(null);
+    setFailedLoginAttempts(0);  // รีเซ็ตจำนวนครั้งล็อกอินผิด
+  };
+
+  const isLoginButtonDisabled = failedLoginAttempts >= 3 && timeLeft > 0;
+
+
 
   // ฟังก์ชันสำหรับ Sign Up
   const handleSignup = async (e) => {
@@ -85,9 +128,9 @@ const LoginPage = () => {
         {/* Logo */}
         <div className="flex justify-center mb-6">
           <img
-            src="/asset/png/bg-spc.png"
+            src="/asset/png/bg-j.ico"
             alt="Company Logo"
-            className="w-16 h-16 sm:w-20 sm:h-20"
+            className="w-20 h-20 sm:w-20 sm:h-20"
           />
         </div>
 
@@ -160,7 +203,7 @@ const LoginPage = () => {
           {/* Sign Up Form */}
           {!isLogin && (
             <div className="max-w-lg mx-auto space-y-6">
-              
+
 
               {/* Username */}
               <div>
@@ -225,7 +268,7 @@ const LoginPage = () => {
 
 
 
-          
+
         </form>
 
         {/* Toggle Login/Sign Up */}
@@ -267,15 +310,42 @@ const LoginPage = () => {
           <p className="mt-2">
             Need help? Contact{' '}
             <a
-              href="mailto:support@company.com"
+              href="mailto:jarudat.jc@gmail.com"
               className="text-blue-400 hover:text-blue-600 font-medium transition-colors"
             >
-              support@company.com
+              jarudat.jc@gmail.com
             </a>
             .
           </p>
         </div>
       </div>
+
+      {/* Modal */}
+      {failedLoginAttempts >= 3 && timeLeft > 0 && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-8 rounded-lg w-96 max-w-lg text-center shadow-xl">
+
+            <h2 className="text-xl font-semibold text-gray-800 mt-4">Account Locked</h2>
+            <p className="mt-2 text-base text-gray-600">Your account is locked due to multiple failed login attempts.</p>
+
+            {/* นับถอยหลังในสีแดง */}
+            <p className="mt-4 text-2xl font-bold text-red-500">
+              Please wait {Math.floor(timeLeft / 1000)} seconds before trying again.
+            </p>
+
+            <p className="mt-4 text-sm text-gray-500">For assistance, please contact <a href="mailto:jarudat.jc@gmail.com" className="text-blue-500 hover:text-blue-600">jarudat.jc@gmail.com</a>.</p>
+
+            <button
+              onClick={handleCloseModal}
+              disabled
+              className="mt-6 bg-gray-500 text-white py-2 px-4 rounded-lg font-semibold hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

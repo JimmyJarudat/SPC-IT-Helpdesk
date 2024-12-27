@@ -28,6 +28,41 @@ const UserSchema = new mongoose.Schema(
     division: { type: String, },
     location: { type: String, },
 
+    failedLoginAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lastFailedLogin: {
+      type: Date,
+    },
+    
+    lastLogin: { type: Date },
+    lastOffline: { type: Date },
+    online: {
+      type: Boolean,
+      default: false // กำหนดสถานะเริ่มต้นเป็นออฟไลน์
+    },
+    lastActivityTime: {
+      type: Date,
+      default: Date.now // บันทึกเวลาที่ผู้ใช้ทำกิจกรรมล่าสุด
+    },
+     // แยก log สำหรับ API
+     activityLogAPI: [{
+      url: { type: String, required: true },
+      method: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      action: { type: String, required: true }
+    }],
+    // เพิ่ม log สำหรับการเข้าถึงหน้า
+    activityLogPage: [{
+      url: { type: String, required: true },
+      method: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      action: { type: String, required: true }
+    }]
+    
+    
+  
 
   },
   { timestamps: true }

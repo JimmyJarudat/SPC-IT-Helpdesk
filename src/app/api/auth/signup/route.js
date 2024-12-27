@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
-import dbConnect from '../../../../../lib/dbConnect';
-import User from '../../../../models/User';
+import dbConnect from '@lib/dbConnect';
+import User from '@/models/User';
 
 export async function POST(req) {
     try {
@@ -34,9 +34,9 @@ export async function POST(req) {
 
         await dbConnect();
 
-        // ตรวจสอบว่า username หรือ email หรือ employeeID มีอยู่ในระบบหรือไม่
+        // ตรวจสอบว่า username  มีอยู่ในระบบหรือไม่
         const existingUser = await User.findOne({
-            $or: [{ username }, { email }, { employeeID }],
+            $or: [{ username }],
         });
         if (existingUser) {
             return NextResponse.json(
