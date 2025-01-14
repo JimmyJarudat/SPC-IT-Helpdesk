@@ -48,17 +48,28 @@ const UserSchema = new mongoose.Schema(
     },
      // แยก log สำหรับ API
      activityLogAPI: [{
-      url: { type: String, required: true },
-      method: { type: String, required: true },
+      url: { type: String  },
+      method: { type: String },
       timestamp: { type: Date, default: Date.now },
-      action: { type: String, required: true }
+      action: { type: String },
+      ipAddress: { type: String }
     }],
     // เพิ่ม log สำหรับการเข้าถึงหน้า
     activityLogPage: [{
-      url: { type: String, required: true },
-      method: { type: String, required: true },
+      url: { type: String },
+      method: { type: String },
       timestamp: { type: Date, default: Date.now },
-      action: { type: String, required: true }
+      action: { type: String },
+      ipAddress: { type: String }
+    }],
+    activityLogSOS: [{
+      type: { type: String }, // console, debugger, source-code, network-tool
+      action: { type: String },
+      details: { type: String },
+      userAgent: { type: String },
+      timestamp: { type: Date, default: Date.now },
+      url: { type: String },
+      ipAddress: { type: String }
     }]
     
     

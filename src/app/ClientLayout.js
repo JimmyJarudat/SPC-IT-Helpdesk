@@ -4,7 +4,9 @@ import { useEffect } from 'react';
 
 import dynamic from "next/dynamic";
 import "./globals.css";
-import '../lib/api';
+//import '../lib/api';
+import { Toaster } from 'sonner';
+import ConsoleWarningModal from './components/ConsoleWarningModal';
 
 import { UserProvider } from '../contexts/UserContext';
 import { ThemeProvider } from "../contexts/ThemeContext";
@@ -71,6 +73,8 @@ export default function ClientLayout({ children }) {
                 <LoadingProvider>
                     <UserProvider>
                         <RootLayoutContent>{children}</RootLayoutContent>
+                        <Toaster />
+                        <ConsoleWarningModal />
                     </UserProvider>
                 </LoadingProvider>
             </LanguageProvider>
