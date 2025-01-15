@@ -565,7 +565,7 @@ const DashboardContent = () => {
     return (
         <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-6" >
             <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white">
-                Hello, Carolyn Perkins!
+                Hello, จิมมี่ใช่ไหม ไม่!!!   ห๊ะ ใช่แหละ!
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
                 You have {tasks.length} tasks on hand.
