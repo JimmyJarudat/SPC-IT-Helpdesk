@@ -14,9 +14,17 @@ export async function POST(request) {
                 username: process.env.CARTON_USER_USERNAME,
                 password: process.env.CARTON_USER_PASSWORD,
             },
-            'New System': {
-                username: process.env.NEW_SYSTEM_USERNAME,
-                password: process.env.NEW_SYSTEM_PASSWORD,
+            'Carton Web System (Admin)': {
+                username: process.env.CARTON_ADMIN_USERNAME,
+                password: process.env.CARTON_ADMIN_PASSWORD,
+            },
+            'Pro-File Center (User)': {
+                username: process.env.PRO_FILE_CENTER_USERNAME,
+                password: process.env.PRO_FILE_CENTER_PASSWORD,
+            },
+            'Pro-File Center (Admin)': {
+                username: process.env.PRO_FILE_CENTER_ADMIN_USERNAME,
+                password: process.env.PRO_FILE_CENTER_ADMIN_PASSWORD,
             },
             'Finance System': {
                 username: process.env.FINANCE_SYSTEM_USERNAME,

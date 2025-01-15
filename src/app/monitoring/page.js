@@ -33,13 +33,31 @@ const StatusPage = () => {
             userInfoSelector: 'span.hidden-xs',
         },
         {
-            name: 'IT Profile',
-            url: 'https://it.profile.co.th/login',
-            usernameSelector: 'input[name="username"]',
-            passwordSelector: 'input[name="password"]',
+            name: 'Carton Web System (Admin)',
+            url: 'https://carton.profile.co.th/admin/user/login',
+            usernameSelector: 'input[name="login-form[login]"]',
+            passwordSelector: 'input[name="login-form[password]"]',
+            buttonSelector: 'button.btn.btn-primary.btn-block',
+            userInfoSelector: 'div.user-panel div.pull-left.info p',
+        },
+        {
+            name: 'Pro-File Center (User)',
+            url: 'https://center.profile.co.th/user/login',
+            usernameSelector: 'input[name="login-form[login]"]',
+            passwordSelector: 'input[name="login-form[password]"]',
             buttonSelector: 'button.btn.btn-primary.btn-block',
             userInfoSelector: 'span.hidden-xs',
         },
+        {
+            name: 'Pro-File Center (Admin)',
+            url: 'https://center.profile.co.th/admin/user/login',
+            usernameSelector: 'input[name="login-form[login]"]',
+            passwordSelector: 'input[name="login-form[password]"]',
+            buttonSelector: 'button.btn.btn-primary.btn-block',
+            userInfoSelector: 'div.user-panel div.pull-left.info p',
+        },
+        
+        
 
     ];
 
@@ -300,22 +318,20 @@ const StatusPage = () => {
                         ) : (
                             <p className="text-lg text-gray-500 dark:text-gray-400 truncate">ยังไม่มีข้อมูล</p>
                         )}
-                        <div key={index} className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg flex flex-col space-y-4">
+                        <div key={index} className="bg-white dark:bg-gray-800 p-6  flex flex-col justify-between space-y-4">
                             {/* เนื้อหาอื่นๆ */}
-                            <div className="flex justify-center gap-4 mt-4">
-                                <button
-                                    onClick={() => fetchStatusForWebsite(index)}
-                                    className="bg-blue-500 text-white font-bold py-2 px-6 rounded shadow hover:bg-blue-600 transition duration-300"
-                                >
-                                    ทดสอบอีกครั้ง
-                                </button>
-                                <button
-                                    onClick={() => openEditPopup(index)}
-                                    className="bg-yellow-500 text-white font-bold py-2 px-6 rounded shadow hover:bg-yellow-600 transition duration-300"
-                                >
-                                    เปลี่ยนบัญชี
-                                </button>
-                            </div>
+                            <button
+                                onClick={() => fetchStatusForWebsite(index)}
+                                className="bg-blue-500 text-white font-bold py-2 px-4 rounded shadow hover:bg-blue-600 transition duration-300 mt-4"
+                            >
+                                ทดสอบอีกครั้ง
+                            </button>
+                            <button
+                                onClick={() => openEditPopup(index)}
+                                className="bg-yellow-500 text-white font-bold py-2 px-4 rounded shadow hover:bg-yellow-600 transition duration-300 mt-2"
+                            >
+                                เปลี่ยนบัญชี
+                            </button>
                         </div>
 
 
