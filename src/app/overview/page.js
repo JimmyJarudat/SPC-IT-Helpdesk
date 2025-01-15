@@ -2,11 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useLoading } from "@/contexts/LoadingContext";
+
 
 export default function Backups() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [expandedFolders, setExpandedFolders] = useState({});
+  const { loading, showLoading, hideLoading } = useLoading();
+
+
 
   function formatDateTime(dateString) {
     if (!dateString || isNaN(new Date(dateString))) return "-";
@@ -26,6 +31,7 @@ export default function Backups() {
 
   useEffect(() => {
     const fetchStatus = async () => {
+      showLoading();
       try {
         const response = await fetch('/api/backup/getBackups', {
           method: 'GET',
@@ -41,6 +47,8 @@ export default function Backups() {
       } catch (error) {
         console.error("Error fetching status:", error);
         setError(error.message);
+      } finally{
+        hideLoading();
       }
     };
     fetchStatus();
