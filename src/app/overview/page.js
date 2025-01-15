@@ -33,7 +33,7 @@ export default function Backups() {
     const fetchStatus = async () => {
       showLoading();
       try {
-        const response = await fetch('/api/backup/getBackups', {
+        const response = await fetch('/api/monitoring/getBackups', {
           method: 'GET',
         });
 
