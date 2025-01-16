@@ -46,4 +46,4 @@ const itJob = () => {
 };
 
 
-export default withAuth(itJob, ["admin"]);
+export default withAuth(itJob, ["admin","superadmin"]);

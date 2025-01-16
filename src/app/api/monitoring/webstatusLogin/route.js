@@ -6,7 +6,11 @@ export async function POST(request) {
 
         // Mapping สำหรับ username และ password ของแต่ละเว็บไซต์
         const defaultCredentials = {
-            'IT Profile': {
+            'NMS-Pro-File': {
+                username: process.env.NMS_PROFILE_USERNAME,
+                password: process.env.NMS_PROFILE_PASSWORD,
+            },
+            'IT Assets': {
                 username: process.env.IT_PROFILE_USERNAME,
                 password: process.env.IT_PROFILE_PASSWORD,
             },
@@ -26,14 +30,11 @@ export async function POST(request) {
                 username: process.env.PRO_FILE_CENTER_ADMIN_USERNAME,
                 password: process.env.PRO_FILE_CENTER_ADMIN_PASSWORD,
             },
-            'Finance System': {
-                username: process.env.FINANCE_SYSTEM_USERNAME,
-                password: process.env.FINANCE_SYSTEM_PASSWORD,
+            'Pro-File API (Admin app)': {
+                username: process.env.ADMINAPP_USERNAME,
+                password: process.env.ADMINAPP_PASSWORD,
             },
-            'HR System': {
-                username: process.env.HR_SYSTEM_USERNAME,
-                password: process.env.HR_SYSTEM_PASSWORD,
-            },
+
         };
 
         const results = [];
@@ -65,38 +66,48 @@ export async function POST(request) {
                     args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox'],
                 });
                 const page = await browser.newPage();
-
+            
                 await page.setUserAgent(
                     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
                 );
-
+            
+                // เก็บ URL ก่อนล็อกอิน
+                const initialUrl = url;
+            
                 await page.goto(url, {
                     timeout: 60000,
                     waitUntil: 'networkidle2',
                 });
-
+            
                 // กรอก Username และ Password
                 await page.type(usernameSelector, finalUsername);
                 await page.type(passwordSelector, finalPassword);
-                console.log("่ดูนี่นะใครล็อคอิน",finalUsername)
+                console.log("่Login", websiteName, "username", finalUsername);
+            
                 // กดปุ่ม Login
                 await page.click(buttonSelector);
-
+            
                 // รอจนหน้าเว็บเปลี่ยน
                 await page.waitForNavigation({ timeout: 60000, waitUntil: 'networkidle2' });
                 afterLoginUrl = page.url();
-
+            
+                // ตรวจสอบว่า URL หลังล็อกอินแตกต่างจาก URL ก่อนหน้า
+                if (afterLoginUrl === initialUrl) {
+                    throw new Error('URL หลังจากล็อกอินยังเหมือนกับ URL ก่อนล็อกอิน');
+                }
+            
                 // ดึงข้อมูลผู้ใช้
                 const userElement = await page.$(userInfoSelector);
                 userInfo = userElement ? await page.evaluate(el => el.textContent.trim(), userElement) : 'ไม่พบข้อมูลผู้ใช้';
-
+            
                 loginStatus = 'ล็อกอินสำเร็จ'; // หากถึงจุดนี้ถือว่าล็อกอินสำเร็จ
-
+            
                 await browser.close();
             } catch (error) {
                 console.error(`Login Error for ${websiteName}:`, error.message);
                 loginStatus = 'ล็อกอินล้มเหลว'; // หากเกิดข้อผิดพลาด
             }
+            
 
             results.push({
                 websiteName,
