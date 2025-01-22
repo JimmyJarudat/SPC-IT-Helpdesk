@@ -24,54 +24,64 @@ export default function Sidebar() {
   const { isSidebarOpen, activeMenu, setActiveMenu } = useSidebarContext();
   const [activeItem, setActiveItem] = useState();
   const [isJobMenuOpen, setIsJobMenuOpen] = useState(false);
+  const [isITTameMenuOpen, setIsITTameMenuOpen] = useState(false);
   const [jobPageLoading, setJobPageLoading] = useState(false);
 
   const router = useRouter();
   const pathname = usePathname();
 
+  const jobMenuItems = [
+    { name: "Dashboard", urlPath: "dashboard", icon: FaTachometerAlt },
+    { name: "Create JOB", urlPath: "create-job", icon: FaPlus },
+    { name: "Pending Tasks", urlPath: "pending-tasks", icon: MdOutlinePendingActions },
+    { name: "In Progress Tasks", urlPath: "in-progress-tasks", icon: SiProgress },
+    { name: "Completed Tasks", urlPath: "completed-tasks", icon: FaCheckCircle },
+    { name: "All Tasks", urlPath: "all-tasks", icon: FaClipboardList }
+  ];
 
   const handleMenuClick = (path, item) => {
-    if (pathname === path) {
-      setJobPageLoading(false); // หากอยู่ในหน้าเดิม
+    if (path === '/it-job') {
+      // กรณีอยู่ในหน้า it-job
+      const menuItem = jobMenuItems.find(menu => menu.name === item);
+      if (menuItem) {
+        if (pathname === `/it-job/${menuItem.urlPath}`) {
+          // ถ้าอยู่ในหน้าเดียวกัน ไม่ต้องแสดง loading
+          setJobPageLoading(false);
+        } else {
+          // ถ้าเป็นแท็บอื่นใน it-job ให้แสดง loading
+          setJobPageLoading(true);
+          router.push(`/it-job/${menuItem.urlPath}`);
+        }
+      }
     } else {
-      setJobPageLoading(true);
-      router.push(path);
-    }
-    setActiveItem(item); // ตั้งค่า activeItem เมื่อคลิก
-  };
-
-  useEffect(() => {
-    setJobPageLoading(false); // เรียก hideLoading ทุกครั้งที่ pathname เปลี่ยน
-  }, [pathname]);
-
-
-  useEffect(() => {
-    if (pathname) {
-      switch (true) {
-        case pathname.includes("/overview"):
-          setActiveItem("Overview");
-          break;
-        case pathname.includes("/it-job"):
-          setActiveItem("JOB");
-          break;
-        case pathname.includes("/user-management"):
-          setActiveItem("User Management");
-          break;
-        default:
-          setActiveItem(""); // Clear active if no matching path
+      // กรณีนำทางไปหน้าอื่น
+      if (pathname === path) {
+        setJobPageLoading(false);
+      } else {
+        setJobPageLoading(true);
+        router.push(path);
       }
     }
+    
+    // อัปเดต state ของเมนูเสมอเมื่อมีการคลิก
+    setActiveItem(item);
+    setActiveMenu(item);
+  };
+  
+  // เพิ่ม useEffect เพื่อจัดการ loading state เมื่อ pathname เปลี่ยน
+  useEffect(() => {
+    setJobPageLoading(false);
   }, [pathname]);
 
 
-  const jobMenuItems = [
-    { name: "Dash Board", icon: FaTachometerAlt },
-    { name: "Create JOB", icon: FaPlus },
-    { name: "Pending Tasks", icon: MdOutlinePendingActions },
-    { name: "In Progress Tasks", icon: SiProgress },
-    { name: "Completed Tasks", icon: FaCheckCircle },
-    { name: "All Tasks", icon: FaClipboardList },
+
+  const ITTameWorkMenuItems = [
+    { name: "Dashboard TameWork ", icon: FaTachometerAlt }, // เปลี่ยนชื่อให้ไม่ซ้ำ
+    { name: "Project List", icon: FaPlus },
+    { name: "Scrum Board", icon: MdOutlinePendingActions },
+    { name: "Issue", icon: SiProgress },
   ];
+
 
   const renderJobSubmenu = () => {
     if (isSidebarOpen) {
@@ -82,15 +92,71 @@ export default function Sidebar() {
               <li key={index}>
                 <a
                   href="#"
+                  onClick={() => handleMenuClick("/it-job", menu.name)} // ใช้ฟังก์ชัน handleMenuClick
+                  className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                    : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
+                    }`}
+                >
+                  <menu.icon
+                    size={18}
+                    className={`${activeItem === menu.name
+                      ? "text-white"
+                      : "text-gray-700 dark:text-gray-400"
+                      }`}
+                  />
+                  <span className="ml-4 text-sm font-semibold">{menu.name}</span>
+                </a>
+
+              </li>
+            ))}
+          </ul>
+        )
+      );
+    } else {
+      return (
+        <div className="absolute left-full top-1 mt-[120px] z-50 hidden group-hover:block transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs rounded shadow-lg p-2">
+            <ul className="py-2 whitespace-nowrap">
+              {jobMenuItems.map((menu, index) => (
+                <li
+                  key={index}
+                  onClick={(e) => {
+                    e.stopPropagation(); // ป้องกัน Event อื่นที่ไม่เกี่ยวข้อง
+                    handleMenuClick("/it-job", menu.name); // เรียก handleMenuClick เพื่อเปลี่ยน URL และอัปเดต Context
+                  }}
+                  className={`px-4 py-2 rounded-md cursor-pointer transition-all duration-300 ${activeItem === menu.name
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white"
+                    }`}
+                >
+                  {menu.name}
+                </li>
+
+              ))}
+            </ul>
+          </div>
+        </div>
+      );
+    }
+  };
+
+  const renderITTameWorkSubmenu = () => {
+    if (isSidebarOpen) {
+      return (
+        isITTameMenuOpen && (
+          <ul className="mt-2 space-y-1 pl-6">
+            {ITTameWorkMenuItems.map((menu, index) => (
+              <li key={index}>
+                <a
+                  href="#"
                   onClick={() => {
                     setActiveMenu(menu.name);
                     setActiveItem(menu.name);
                   }}
                   className={`flex items-center justify-start px-4 py-2 rounded-md transition-all duration-300 ${activeItem === menu.name
-                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
-                    } text-white`
-                    : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight
-                    } hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
+                    ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                    : `text-gray-700 dark:text-gray-400 hover:bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-white`
                     }`}
                 >
                   <menu.icon
@@ -109,10 +175,10 @@ export default function Sidebar() {
       );
     } else {
       return (
-        <div className="absolute left-full top-1 mt-[120px] z-50 hidden group-hover:block transition-all duration-300">
+        <div className="absolute left-full top-0 mt-[179px] z-50 hidden group-hover:block transition-all duration-300">
           <div className="bg-white dark:bg-gray-800 text-gray-900 dark:text-white text-xs rounded shadow-lg p-2">
             <ul className="py-2 whitespace-nowrap">
-              {jobMenuItems.map((menu, index) => (
+              {ITTameWorkMenuItems.map((menu, index) => (
                 <li
                   key={index}
                   onClick={(e) => {
@@ -134,6 +200,9 @@ export default function Sidebar() {
       );
     }
   };
+
+
+
 
 
   return (
@@ -201,16 +270,14 @@ export default function Sidebar() {
       </ul>
 
       {/* JOB Menu */}
-      <ul className=" flex flex-col justify-start items-stretch space-y-2 mt-2 group">
+      <ul className="flex flex-col justify-start items-stretch space-y-2 mt-2 group">
         <li>
           <div
             onClick={() => {
-              handleMenuClick("/it-job");
+              handleMenuClick("/it-job/dashboard", "Jobs Overview"); // ใช้ handleMenuClick สำหรับ URL และ Context
               if (isSidebarOpen) {
-                setIsJobMenuOpen(!isJobMenuOpen);
+                setIsJobMenuOpen(!isJobMenuOpen); // เปิด/ปิดเมนูย่อย
               }
-              setActiveMenu("Jobs Overview");
-              setActiveItem("JOB");
             }}
             className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
               } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
@@ -219,36 +286,21 @@ export default function Sidebar() {
               }`}
             title={isSidebarOpen ? "" : "IT - JOB"}
           >
-            <Link href="/it-job">
-              <div
-                className="flex items-center w-full"
-                onClick={() => {
-                  handleMenuClick("/it-job");
-                  if (isSidebarOpen) {
-                    setIsJobMenuOpen(!isJobMenuOpen);
-                  }
-                  setActiveMenu("Jobs Overview");
-                  setActiveItem("JOB");
-                }}
-                title={isSidebarOpen ? "" : "IT - JOB"}
-              >
-                <FaTasks
-                  size={20}
-                  className={`${activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
-                    ? "text-white"
-                    : "text-gray-700 dark:text-gray-400"
-                    }`}
-                />
-                {isSidebarOpen && (
-                  <span className="ml-4 text-sm font-semibold">IT - JOB</span>
-                )}
-              </div>
-            </Link>
+            <FaTasks
+              size={20}
+              className={`${activeItem === "JOB" || jobMenuItems.some((menu) => menu.name === activeItem)
+                ? "text-white"
+                : "text-gray-700 dark:text-gray-400"
+                }`}
+            />
+            {isSidebarOpen && (
+              <span className="ml-4 text-sm font-semibold">IT - JOB</span>
+            )}
             {isSidebarOpen && (
               <button
                 onClick={(e) => {
-                  e.stopPropagation(); // หยุดไม่ให้ Event หลักถูกกระตุ้น
-                  setIsJobMenuOpen(!isJobMenuOpen); // สลับสถานะเปิด/ปิดเมนูย่อย
+                  e.stopPropagation(); // หยุด Event คลิกจากกระจายไปยังเมนูอื่น
+                  setIsJobMenuOpen(!isJobMenuOpen); // เปิด/ปิดเมนูย่อย
                 }}
                 className="ml-auto text-gray-700 dark:text-gray-400 hover:text-white focus:outline-none"
               >
@@ -261,6 +313,71 @@ export default function Sidebar() {
           {renderJobSubmenu()}
         </li>
       </ul>
+
+
+      {/* IT-Tame Work */}
+      <ul className="flex flex-col justify-start items-stretch space-y-2 mt-2 group">
+        <li>
+          <div
+            onClick={() => {
+              handleMenuClick("/IT-TameWork");
+              if (isSidebarOpen) {
+                setIsJobMenuOpen(!isJobMenuOpen); // สลับสถานะของเมนูย่อย
+              }
+              setActiveMenu("TameWork Overview");
+              setActiveItem("TameWork");
+            }}
+            className={`relative flex items-center ${isSidebarOpen ? "justify-start" : "justify-center"
+              } px-4 py-3 rounded-md cursor-pointer transition-all duration-300 ${activeItem === "TameWork" || ITTameWorkMenuItems.some((menu) => menu.name === activeItem)
+                ? `bg-${theme.primaryColor.split("-")[1]}-${theme.primaryWeight} text-white`
+                : `text-gray-700 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700`
+              }`}
+            title={isSidebarOpen ? "" : "IT - TameWork"}
+          >
+            <Link href="/IT-TameWork">
+              <div
+                className="flex items-center w-full"
+                onClick={() => {
+                  handleMenuClick("/IT-TameWork");
+                  if (isSidebarOpen) {
+                    setIsJobMenuOpen(!isJobMenuOpen);
+                  }
+                  setActiveMenu("TameWork Overview");
+                  setActiveItem("TameWork");
+                }}
+                title={isSidebarOpen ? "" : "IT - TameWork"}
+              >
+                <FaTasks
+                  size={20}
+                  className={`${activeItem === "TameWork" || ITTameWorkMenuItems.some((menu) => menu.name === activeItem)
+                    ? "text-white"
+                    : "text-gray-700 dark:text-gray-400"
+                    }`}
+                />
+                {isSidebarOpen && (
+                  <span className="ml-4 text-sm font-semibold">IT - TameWork</span>
+                )}
+              </div>
+            </Link>
+            {isSidebarOpen && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation(); // หยุดไม่ให้ Event หลักถูกกระตุ้น
+                  setIsITTameMenuOpen(!isITTameMenuOpen); // สลับสถานะเปิด/ปิดเมนูย่อย
+                }}
+                className="ml-auto text-gray-700 dark:text-gray-400 hover:text-white focus:outline-none"
+              >
+                {isITTameMenuOpen ? <FaChevronDown /> : <FaChevronRight />}
+              </button>
+
+            )}
+          </div>
+
+          {/* Render IT-Tame Work Submenu */}
+          {renderITTameWorkSubmenu()}
+        </li>
+      </ul>
+
 
       <ul className="flex flex-col space-y-2 mt-2">
         <li>

@@ -104,7 +104,8 @@ export async function PUT(req) {
       Object.assign(user, otherUpdates);
     }
 
-
+    // อัปเดตสถานะการล็อกอินครั้งแรก
+    user.isFirstLogin = false;
 
     // บันทึกข้อมูลในฐานข้อมูล
     const savedUser = await user.save();

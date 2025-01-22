@@ -15,7 +15,6 @@ export async function POST(req) {
     if (!user) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
-
     // ตรวจสอบการพยายามเข้าสู่ระบบผิดพลาด
     const now = new Date();
     if (user.failedLoginAttempts >= 3 && now - user.lastFailedLogin < 5 * 60 * 1000) {
@@ -61,6 +60,7 @@ export async function POST(req) {
       position: user.position,
       location: user.location,
       profileImage: user.profileImage,
+      isFirstLogin: user.isFirstLogin,
 
     }, JWT_SECRET, { expiresIn: '7d' }); // Token มีอายุ 7 วัน
     console.log("Generated Token:", token); // Debug Token
@@ -70,7 +70,7 @@ export async function POST(req) {
       user, // ส่งข้อมูลผู้ใช้ทั้งหมด (ยกเว้น password)
       token,
     });
-
+    
     response.cookies.set('authToken', token, {
       httpOnly: false,
       secure: process.env.NODE_ENV === 'production',

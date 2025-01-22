@@ -6,34 +6,30 @@ import Sidebar from "../components/DashboardLayout/Sidebar";
 import Navbar from "../components/DashboardLayout/Navbar";
 import { useTheme } from "../../contexts/ThemeContext";
 import { useSidebarContext } from "../../contexts/SidebarContext";
-import CreateTaskContent from "../components/ItJob/CreateTaskContent";
 import PendingTasksContent from "../components/ItJob/PendingTasksContent";
 import InProgressTasksContent from "../components/ItJob/InProgressTasksContent";
 import { useUser } from "@/contexts/UserContext";
-import AllTasksContent from "../components/ItJob/AllTasksContent";
-import CompletedTasksContent from "../components/ItJob/CompletedTasksContent";
-import DashboardContent from "../components/ItJob/DashboardContent";
+import DashboardTameWoek from './../components/IT-TameWork/Dashboard-TameWoek';
+import ProjectList from "../components/IT-TameWork/ProjectList";
+import ScrumBoard from "../components/IT-TameWork/ScrumBoard"
+import Issue from "../components/IT-TameWork/Issue"
 
-const itJob = () => {
+const ITTameWork = () => {
   const { activeMenu } = useSidebarContext();
   //console.log("Active Menu in Page.js:", activeMenu);
 
   const renderContent = () => {
     switch (activeMenu) {
-      case "Dashboard1":
-        return <DashboardContent />;
-      case "Create JOB":
-        return <CreateTaskContent />;
-      case "Pending Tasks":
-        return <PendingTasksContent />;
-      case "In Progress Tasks":
-        return <InProgressTasksContent />;
-      case "Completed Tasks":
-        return <CompletedTasksContent />;
-      case "All Tasks":
-        return <AllTasksContent />;
+      case "Dashboard TameWork":
+        return <DashboardTameWoek />;
+      case "Project List":
+        return <ProjectList />;
+      case "Scrum Board":
+        return <ScrumBoard />;
+      case "Issue":
+        return <Issue />;
       default:
-        return <DashboardContent />;
+        return <DashboardTameWoek />;
     }
   };
 
@@ -46,4 +42,4 @@ const itJob = () => {
 };
 
 
-export default withAuth(itJob, ["admin","superadmin"]);
+export default withAuth(ITTameWork, ["admin","superadmin"]);

@@ -70,7 +70,12 @@ const UserSchema = new mongoose.Schema(
       timestamp: { type: Date, default: Date.now },
       url: { type: String },
       ipAddress: { type: String }
-    }]
+    }],
+    isFirstLogin: {
+      type: Boolean,
+      default: true, // ค่าเริ่มต้นคือ true เมื่อสร้างบัญชีใหม่
+    },
+    
     
     
   
