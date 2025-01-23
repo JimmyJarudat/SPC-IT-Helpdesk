@@ -1,5 +1,44 @@
 import sql from "mssql";
 
+/**
+ * @swagger
+ * /api/monitorring/checkConnection:
+ *   post:
+ *     summary: ตรวจสอบสถานะเซิร์ฟเวอร์ SQL
+ *     description: เชื่อมต่อกับเซิร์ฟเวอร์ SQL ที่ระบุใน environment variables และตรวจสอบสถานะการเชื่อมต่อ
+ *     requestBody:
+ *       required: false
+ *     responses:
+ *       200:
+ *         description: การเชื่อมต่อสำเร็จ
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   description: สถานะของการดำเนินงาน
+ *                 results:
+ *                   type: array
+ *                   description: รายการผลลัพธ์การตรวจสอบเซิร์ฟเวอร์
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       server:
+ *                         type: string
+ *                         description: ชื่อเซิร์ฟเวอร์ที่ตรวจสอบ
+ *                       status:
+ *                         type: string
+ *                         description: สถานะของเซิร์ฟเวอร์
+ *                       error:
+ *                         type: string
+ *                         description: ข้อผิดพลาด (ถ้ามี)
+ *       500:
+ *         description: มีข้อผิดพลาดที่ไม่คาดคิด
+ */
+
+
 export async function POST(request) {
     try {
         // ดึงข้อมูลเซิร์ฟเวอร์จาก .env
