@@ -97,13 +97,8 @@ async function fetchNASData(ip, port, totalCommand, currentCommand) {
     const sshConfig = {
         host: ip,
         port,
-<<<<<<< Updated upstream
         username: 'Test',
         password: '',
-=======
-        username: 'spaprofile',
-        password: 'Pf@740#5020',
->>>>>>> Stashed changes
     };
 
     let totalOutput = '';

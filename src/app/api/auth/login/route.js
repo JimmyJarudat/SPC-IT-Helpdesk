@@ -160,11 +160,10 @@ export async function POST(req) {
       position: user.position,
       location: user.location,
       profileImage: user.profileImage,
-<<<<<<< Updated upstream
       isFirstLogin: user.isFirstLogin,
 
-=======
->>>>>>> Stashed changes
+
+
     }, JWT_SECRET, { expiresIn: '7d' }); // Token มีอายุ 7 วัน
     console.log("Generated Token:", token); // Debug Token
 
