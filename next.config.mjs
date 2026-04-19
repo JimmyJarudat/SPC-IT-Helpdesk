@@ -12,9 +12,7 @@ const nextConfig = {
         ],
         domains: ['picsum.photos'],
     },
-    api: {
-        bodyParser: false,
-    },
+    // ลบ api: { bodyParser: false } ออก — ไม่รองรับใน App Router
 };
 
 export default nextConfig;

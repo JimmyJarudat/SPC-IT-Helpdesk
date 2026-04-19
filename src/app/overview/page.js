@@ -1,261 +1,104 @@
-'use client'
+'use client';
 
-import React, { useEffect, useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
-import { useLoading } from "@/contexts/LoadingContext";
+import { useUser } from '@/contexts/UserContext';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
+const menuItems = [
+  {
+    title: 'แจ้งปัญหาใหม่',
+    desc: 'สร้าง ticket ใหม่',
+    href: '/ticket/create',
+    bg: '#E6F1FB', color: '#185FA5',
+  },
+  {
+    title: 'ติดตาม ticket',
+    desc: 'ดูสถานะการแจ้ง',
+    href: '/ticket',
+    bg: '#E1F5EE', color: '#0F6E56',
+  },
+  {
+    title: 'ประวัติ',
+    desc: 'ticket ที่ผ่านมา',
+    href: '/ticket/history',
+    bg: '#FAEEDA', color: '#854F0B',
+  },
+  {
+    title: 'โปรไฟล์',
+    desc: 'ข้อมูลส่วนตัว',
+    href: '/profile',
+    bg: '#EEEDFE', color: '#534AB7',
+  },
+];
 
-export default function Backups() {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [expandedFolders, setExpandedFolders] = useState({});
-  const { loading, showLoading, hideLoading } = useLoading();
+export default function OverviewPage() {
+  const { user, isLoading } = useUser();
+  const router = useRouter();
 
-
-
-  function formatDateTime(dateString) {
-    if (!dateString || isNaN(new Date(dateString))) return "-";
-    const options = {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    };
-    const formattedDate = new Intl.DateTimeFormat("th-TH", options).format(
-      new Date(dateString)
-    );
-    return formattedDate.replace(",", " น.");
-  }
-
+  // ถ้ายังไม่ได้ login ให้ redirect ไปหน้า login
   useEffect(() => {
-    const fetchStatus = async () => {
-      showLoading();
-      try {
-        const response = await fetch('/api/backup/getBackups', {
-          method: 'GET',
-        });
+    if (!isLoading && !user) {
+      router.push('/login');
+    }
+  }, [user, isLoading]);
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
+  if (isLoading || !user) return null;
 
-        const result = await response.json();
-        setData(result);
-
-      } catch (error) {
-        console.error("Error fetching status:", error);
-        setError(error.message);
-      } finally{
-        hideLoading();
-      }
-    };
-    fetchStatus();
-  }, []);
-
-  const toggleFolder = (subFolder) => {
-    setExpandedFolders(prev => ({
-      ...prev,
-      [subFolder]: !prev[subFolder]
-    }));
-  };
-
-  const renderGroupedFiles = (fileDetails) => {
-    const groupedFiles = fileDetails.reduce((acc, file) => {
-      const key = file.subFolder;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(file);
-      return acc;
-    }, {});
-
-    return Object.entries(groupedFiles).map(([subFolder, files]) => {
-      const isExpanded = expandedFolders[subFolder];
-      const displayFiles = isExpanded ? files : [files[0]];
-
-      return (
-        <React.Fragment key={subFolder}>
-          <tr className={`bg-gray-50 dark:bg-gray-800 ${!displayFiles[0].name && displayFiles[0].excluded === false ? "bg-red-100 dark:bg-red-800" : ""}`}>
-            <td className="px-4 py-2 border-b font-medium">
-              {subFolder || "-"}
-            </td>
-            <td className="px-4 py-2 border-b">
-              {displayFiles[0].name || "No backup files for today"}
-            </td>
-            <td className="px-4 py-2 border-b">{displayFiles[0].size || "-"}</td>
-            <td className="px-4 py-2 border-b">
-              {formatDateTime(displayFiles[0].lastModified)}
-            </td>
-            <td className="px-4 py-2 border-b">
-              {displayFiles[0].excluded ? "Yes" : "No"}
-            </td>
-            <td className="px-4 py-2 border-b text-center">
-              <div className="flex items-center justify-start space-x-2">
-                <span>{files.length}</span>
-                {files.length > 1 && (
-                  <button
-                    onClick={() => toggleFolder(subFolder)}
-                    className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-700"
-                  >
-                    {isExpanded ? (
-                      <ChevronUp className="w-4 h-4" />
-                    ) : (
-                      <ChevronDown className="w-4 h-4" />
-                    )}
-                  </button>
-                )}
-              </div>
-            </td>
-          </tr>
-
-          {/* แสดงไฟล์เมื่อคลิกขยาย */}
-          {isExpanded && files.slice(1).map((file, index) => (
-            <tr
-              key={`${subFolder}-${index + 1}`}
-              className={`bg-gray-100 dark:bg-gray-700 ${!file.name && file.excluded === false ? "bg-red-100 dark:bg-red-800" : ""}`}
-            >
-              <td className="px-4 py-2 border-b pl-8"></td>
-              <td className="px-4 py-2 border-b">{file.name || "No backup files for today"}</td>
-              <td className="px-4 py-2 border-b">{file.size || "-"}</td>
-              <td className="px-4 py-2 border-b">{formatDateTime(file.lastModified)}</td>
-              <td className="px-4 py-2 border-b">{file.excluded ? "Yes" : "No"}</td>
-              <td className="px-4 py-2 border-b"></td>
-            </tr>
-          ))}
-        </React.Fragment>
-
-
-      );
-    });
-  };
+  // ดึงตัวย่อชื่อสำหรับ avatar
+  const initials = user.fullName
+    ? user.fullName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+    : user.username?.slice(0, 2).toUpperCase();
 
   return (
-    <div className="p-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800 dark:text-gray-200">
-        Backup Folder Status
-      </h1>
-      {error ? (
-        <p className="text-red-500 text-lg">Error: {error}</p>
-      ) : (
-        data && (
-          <>
-            <div className="mb-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-md">
-              <h2 className="text-2xl font-semibold text-gray-800 dark:text-gray-200">
-                Overall Status:{" "}
-                <span
-                  className={`px-3 py-1 rounded-lg font-bold ${data.overallStatus === "ปกติ"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-red-100 text-red-700"
-                    }`}
-                >
-                  {data.overallStatus}
-                </span>
-              </h2>
+    <div className="min-h-screen bg-gray-50 p-6">
+
+      {/* Welcome Card */}
+      <div className="bg-white border border-gray-100 rounded-xl p-6 mb-6 flex items-center gap-4">
+        <div className="w-14 h-14 rounded-full bg-blue-50 flex items-center justify-center text-blue-800 font-medium text-lg flex-shrink-0">
+          {initials}
+        </div>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-800">
+            ยินดีต้อนรับ, {user.fullName || user.username}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            วันนี้ระบบพร้อมให้บริการแล้ว — มีอะไรให้ช่วยเหลือไหม?
+          </p>
+          <span className="inline-block mt-2 text-xs px-3 py-0.5 rounded-full bg-green-50 text-green-800">
+            IT Helpdesk System
+          </span>
+        </div>
+      </div>
+
+      {/* Quick Menu */}
+      <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">เมนูหลัก</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+        {menuItems.map((item) => (
+          <button
+            key={item.href}
+            onClick={() => router.push(item.href)}
+            className="bg-white border border-gray-100 rounded-xl p-4 text-left hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center mb-2"
+              style={{ background: item.bg }}>
+              <div className="w-2 h-2 rounded-full" style={{ background: item.color }} />
             </div>
+            <p className="text-sm font-medium text-gray-800">{item.title}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
+          </button>
+        ))}
+      </div>
 
+      {/* Notice */}
+      <div className="bg-blue-50 rounded-lg p-4 flex gap-3">
+        <span className="text-blue-500 mt-0.5 flex-shrink-0">ℹ</span>
+        <p className="text-sm text-blue-800">
+          หากพบปัญหาเร่งด่วน กรุณาติดต่อทีม IT โดยตรงที่{' '}
+          <a href="mailto:jarudat.jc@gmail.com" className="underline">jarudat.jc@gmail.com</a>
+          {' '}หรือโทร ext. 1234
+        </p>
+      </div>
 
-
-            <div className="mb-8">
-              <table className="w-full text-left border-collapse bg-white dark:bg-gray-800 rounded-lg shadow-md">
-                <thead className="bg-gray-100 dark:bg-gray-700">
-                  <tr>
-                    <th className="px-4 py-3 border-b text-gray-800 dark:text-gray-200">
-                      Folder Name
-                    </th>
-                    <th className="px-4 py-3 border-b text-gray-800 dark:text-gray-200">
-                      Status
-                    </th>
-                    <th className="px-4 py-3 border-b text-gray-800 dark:text-gray-200">
-                      Folders with No Files
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.folderSummaries.map((folder, index) => (
-                    <tr
-                      key={index}
-                      className={`odd:bg-gray-50 even:bg-gray-100 dark:odd:bg-gray-800 dark:even:bg-gray-700 ${folder.status === "ล้มเหลว" ? "bg-red-50 dark:bg-red-900" : ""}`}
-                    >
-                      <td className="px-4 py-3 border-b">{folder.folderName}</td>
-                      <td
-                        className={`px-4 py-3 border-b font-bold ${folder.status === "ปกติ" ? "text-green-500" : "text-red-500"}`}
-                      >
-                        {folder.status}
-                      </td>
-                      <td className="px-4 py-3 border-b">
-                        {folder.fileDetails
-                          .filter((file) => !file.name && file.excluded === false)  // ตรวจสอบไฟล์ที่ไม่มีชื่อและไม่ได้ถูกยกเว้น
-                          .map((file) => file.subFolder)
-                          .join(", ") || "-"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-
-            {data.folderSummaries.map((folder, index) => (
-              <div
-                key={index}
-                className="mb-8 p-6 bg-white dark:bg-gray-800 rounded-lg shadow-md"
-              >
-                <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-200">
-                  {folder.folderName}{" "}
-                  <span
-                    className={`text-sm px-2 py-1 rounded-full font-bold ${folder.status === "ปกติ"
-                      ? "bg-green-100 text-green-700"
-                      : "bg-red-100 text-red-700"
-                      }`}
-                  >
-                    {folder.status}
-                  </span>
-                </h2>
-
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead className="bg-gray-100 dark:bg-gray-700">
-                      <tr>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          Subfolder
-                        </th>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          File Name
-                        </th>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          Size
-                        </th>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          Last Modified Date
-                        </th>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          Excluded
-                        </th>
-                        <th className="px-4 py-2 border-b text-gray-800 dark:text-gray-200">
-                          Files Count
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {renderGroupedFiles(folder.fileDetails)}
-                    </tbody>
-                  </table>
-
-                  <div className="mt-4 p-4 text-sm text-gray-600 dark:text-gray-400 italic">
-                    {folder.folderName === 'MR_DB'
-                      ? 'ในการคำนวณสถานะ ไม่รวมโฟลเดอร์ที่ไม่มีไฟล์'
-                      : 'โฟลเดอร์ที่ไม่มีไฟล์จะไม่ได้รับการคำนวณ Test2'
-                    }
-                  </div>
-                </div>
-              </div>
-            ))}
-
-          </>
-        )
-      )}
     </div>
   );
 }

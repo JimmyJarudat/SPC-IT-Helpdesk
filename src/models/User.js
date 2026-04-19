@@ -24,7 +24,6 @@ const UserSchema = new mongoose.Schema(
     profileImage: { type: String, },
     computerName: { type: String, },
     position: { type: String, },
-    department: { type: String, },
     division: { type: String, },
     location: { type: String, },
 
@@ -70,7 +69,12 @@ const UserSchema = new mongoose.Schema(
       timestamp: { type: Date, default: Date.now },
       url: { type: String },
       ipAddress: { type: String }
-    }]
+    }],
+    isFirstLogin: {
+      type: Boolean,
+      default: true, // ค่าเริ่มต้นคือ true เมื่อสร้างบัญชีใหม่
+    },
+    
     
     
   

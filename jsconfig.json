@@ -4,7 +4,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@lib/*": ["lib/*"],
-      "@middleware": ["middleware.js"],
+      "@middleware": ["middleware/middleware.js"],
       "@/app/*": ["src/app/*"],
       "@/contexts/*": ["src/contexts/*"],
       "@/hoc/*": ["src/hoc/*"],

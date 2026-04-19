@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 const JWT_SECRET = process.env.JWT_SECRET;
 
 export default function middleware(req) {
-  const token = req.cookies.get("authToken"); // อ่าน Token จาก Cookies
+  const token = req.cookies.get("authToken")?.value;
   const url = req.nextUrl.clone();
 
   //console.log("Token from Middleware:", token); // Debug Token

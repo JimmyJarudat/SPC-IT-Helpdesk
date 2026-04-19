@@ -13,37 +13,29 @@ export async function POST(req) {
 
     const user = await User.findOne({ username });
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ message: 'User not found' }, { status: 404 });
     }
 
-    // ตรวจสอบการพยายามเข้าสู่ระบบผิดพลาด
     const now = new Date();
     if (user.failedLoginAttempts >= 3 && now - user.lastFailedLogin < 5 * 60 * 1000) {
-      // หากมีการพยายามผิดพลาดเกิน 3 ครั้งและยังไม่ครบ 5 นาที
-      return NextResponse.json({ message: 'กรุณาลองใหม่ใน 5 นาที' }, { status: 400 }); // แจ้ง UI ว่าให้รอ
+      return NextResponse.json({ message: 'กรุณาลองใหม่ใน 5 นาที' }, { status: 400 });
     }
 
-    // ตรวจสอบรหัสผ่าน
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      // อัปเดตจำนวนครั้งที่พยายามเข้าสู่ระบบผิดพลาด
       user.failedLoginAttempts = user.failedLoginAttempts + 1;
       user.lastFailedLogin = now;
-      await user.save(); // บันทึกการพยายามผิดพลาด
-
-      return NextResponse.json({ message: 'รหัสผ่านไม่ถูกต้อง' }, { status: 400 }); // แจ้ง UI ว่ารหัสผิด
+      await user.save();
+      return NextResponse.json({ message: 'รหัสผ่านไม่ถูกต้อง' }, { status: 400 });
     }
 
-    // รีเซ็ตการพยายามผิดพลาดหากล็อกอินสำเร็จ
     user.failedLoginAttempts = 0;
-
-    // อัปเดตเวลาล็อกอินล่าสุด
     user.lastLogin = now;
     user.online = true;
-    user.lastActivityTime = now; // อัปเดตเวลาล่าสุดที่ผู้ใช้ทำกิจกรรม
+    user.lastActivityTime = now;
     await user.save();
 
-    user.password = undefined; // ลบฟิลด์ password ออกจาก Response
+    user.password = undefined;
     const token = jwt.sign({
       id: user._id,
       fullName: user.fullName,
@@ -61,13 +53,12 @@ export async function POST(req) {
       position: user.position,
       location: user.location,
       profileImage: user.profileImage,
-
-    }, JWT_SECRET, { expiresIn: '7d' }); // Token มีอายุ 7 วัน
-    console.log("Generated Token:", token); // Debug Token
+      isFirstLogin: user.isFirstLogin,
+    }, JWT_SECRET, { expiresIn: '7d' });
 
     const response = NextResponse.json({
       message: 'Login successful',
-      user, // ส่งข้อมูลผู้ใช้ทั้งหมด (ยกเว้น password)
+      user,
       token,
     });
 
@@ -76,12 +67,12 @@ export async function POST(req) {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
       path: '/',
-      maxAge: 60 * 60 * 24 * 7, // คุกกี้หมดอายุใน 7 วัน
+      maxAge: 60 * 60 * 24 * 7,
     });
 
     return response;
   } catch (error) {
     console.error('Error:', error.message);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ message: 'Internal server error' }, { status: 500 });
   }
 }

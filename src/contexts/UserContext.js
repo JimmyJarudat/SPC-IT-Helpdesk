@@ -71,6 +71,9 @@ export const UserProvider = ({ children }) => {
       throw error;  // ส่งข้อผิดพลาดกลับไปที่ handleLogin
     }
   };
+
+  
+  
   
   
   
@@ -157,7 +160,7 @@ export const UserProvider = ({ children }) => {
 
 
   return (
-    <UserContext.Provider value={{ user, isLoading, login, logout, fetchProfile, updateStatus, setUpdateStatus, }}>
+    <UserContext.Provider value={{ user,setUser, isLoading, login, logout, fetchProfile, updateStatus, setUpdateStatus, }}>
       {children}
     </UserContext.Provider>
   );

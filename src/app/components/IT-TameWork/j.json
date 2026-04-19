@@ -1,0 +1,240 @@
+[
+    {
+      "_id": "proj001",
+      "name": "ระบบบริหารจัดการโครงการ",
+      "description": "พัฒนาระบบบริหารจัดการโครงการสำหรับองค์กร",
+      "group": "IT Development",
+      "createdBy": "6749ac351727b9a8c345e58b",
+      "members": ["675170751cc9935392337476", "676da9cc4eb31d390e9033c4", "678bb837d611177618c454dd"],
+      "projectManager": "6749ac351727b9a8c345e58b",
+      "status": "Active",
+      "tags": ["Web Application", "React", "MongoDB"],
+      "startDate": "2024-01-01T00:00:00Z",
+      "endDate": "2024-06-30T00:00:00Z",
+      "priority": "High",
+      "progress": 65,
+      "budget": 500000,
+      "projectType": "Internal",
+      "attachments": ["spec.pdf", "design.fig", "timeline.xlsx"],
+      "tasks": [
+        {
+          "taskId": "task001",
+          "title": "ออกแบบ Database Schema",
+          "description": "ออกแบบโครงสร้างฐานข้อมูลสำหรับระบบ",
+          "status": "Completed",
+          "assignee": "675170751cc9935392337476",
+          "startDate": "2024-01-01T00:00:00Z",
+          "endDate": "2024-01-15T00:00:00Z",
+          "estimatedHours": 40,
+          "actualHours": 35,
+          "comments": [
+            {
+              "user": "6749ac351727b9a8c345e58b",
+              "text": "ตรวจสอบและอนุมัติแล้ว",
+              "createdAt": "2024-01-15T09:00:00Z"
+            }
+          ],
+          "attachments": ["schema.pdf", "erd.png"]
+        },
+        {
+          "taskId": "task002",
+          "title": "พัฒนา Frontend",
+          "description": "พัฒนาส่วน Frontend ด้วย React",
+          "status": "In Progress",
+          "assignee": "676da9cc4eb31d390e9033c4",
+          "startDate": "2024-01-16T00:00:00Z",
+          "endDate": "2024-02-28T00:00:00Z",
+          "estimatedHours": 160,
+          "actualHours": 100,
+          "comments": [],
+          "attachments": ["wireframes.fig"]
+        }
+      ],
+      "milestones": [
+        {
+          "name": "เสร็จสิ้นการออกแบบระบบ",
+          "description": "ออกแบบระบบและฐานข้อมูลเสร็จสมบูรณ์",
+          "dueDate": "2024-01-31T00:00:00Z",
+          "completed": true
+        },
+        {
+          "name": "ระบบพร้อมทดสอบ",
+          "description": "ระบบพร้อมสำหรับการทดสอบโดยผู้ใช้",
+          "dueDate": "2024-04-30T00:00:00Z",
+          "completed": false
+        }
+      ],
+      "risks": [
+        {
+          "description": "การเปลี่ยนแปลงความต้องการของผู้ใช้",
+          "probability": "Medium",
+          "impact": "High",
+          "mitigation": "จัดประชุมผู้ใช้งานอย่างสม่ำเสมอ"
+        },
+        {
+          "description": "ความล่าช้าในการพัฒนา",
+          "probability": "Low",
+          "impact": "Medium",
+          "mitigation": "เพิ่มการติดตามงานรายวัน"
+        }
+      ],
+      "notifications": [
+        {
+          "userId": "675170751cc9935392337476",
+          "message": "มีการอัปเดตเอกสารการออกแบบ",
+          "read": false,
+          "date": "2024-01-20T09:00:00Z"
+        },
+        {
+          "userId": "676da9cc4eb31d390e9033c4",
+          "message": "กำหนดส่งงาน Frontend ใกล้ถึงแล้ว",
+          "read": true,
+          "date": "2024-02-25T15:00:00Z"
+        }
+      ],
+      "lastModifiedBy": "6749ac351727b9a8c345e58b",
+      "lastModifiedAt": "2024-02-25T15:00:00Z"
+    },
+    {
+      "_id": "proj002",
+      "name": "แอปพลิเคชันมือถือสำหรับลูกค้า",
+      "description": "พัฒนาแอปพลิเคชันมือถือสำหรับลูกค้าองค์กร",
+      "group": "Mobile Development",
+      "createdBy": "676da9cc4eb31d390e9033c4",
+      "members": ["678bb837d611177618c454dd", "6749ac351727b9a8c345e58b", "675170751cc9935392337476"],
+      "projectManager": "676da9cc4eb31d390e9033c4",
+      "status": "Active",
+      "tags": ["Mobile", "React Native", "API", "iOS", "Android"],
+      "startDate": "2024-02-01T00:00:00Z",
+      "endDate": "2024-08-31T00:00:00Z",
+      "priority": "Critical",
+      "progress": 25,
+      "budget": 800000,
+      "projectType": "External",
+      "attachments": ["requirements.pdf", "mockups.fig", "api-docs.md"],
+      "tasks": [
+        {
+          "taskId": "task003",
+          "title": "ออกแบบ UI/UX",
+          "description": "ออกแบบส่วนติดต่อผู้ใช้",
+          "status": "In Progress",
+          "assignee": "678bb837d611177618c454dd",
+          "startDate": "2024-02-01T00:00:00Z",
+          "endDate": "2024-02-29T00:00:00Z",
+          "estimatedHours": 120,
+          "actualHours": 80,
+          "comments": [
+            {
+              "user": "676da9cc4eb31d390e9033c4",
+              "text": "ปรับแก้ตาม feedback จากลูกค้า",
+              "createdAt": "2024-02-15T13:00:00Z"
+            }
+          ],
+          "attachments": ["feedback.pdf"]
+        }
+      ],
+      "milestones": [
+        {
+          "name": "UI/UX Design Sign-off",
+          "description": "การอนุมัติการออกแบบ UI/UX",
+          "dueDate": "2024-02-29T00:00:00Z",
+          "completed": false
+        },
+        {
+          "name": "Beta Release",
+          "description": "ปล่อยเวอร์ชั่นทดสอบ",
+          "dueDate": "2024-06-30T00:00:00Z",
+          "completed": false
+        }
+      ],
+      "risks": [
+        {
+          "description": "ความล่าช้าในการอนุมัติ App Store",
+          "probability": "High",
+          "impact": "High",
+          "mitigation": "เตรียมเอกสารล่วงหน้าและศึกษาข้อกำหนด"
+        }
+      ],
+      "notifications": [
+        {
+          "userId": "678bb837d611177618c454dd",
+          "message": "มี feedback ใหม่จากลูกค้า",
+          "read": false,
+          "date": "2024-02-15T13:00:00Z"
+        }
+      ],
+      "lastModifiedBy": "676da9cc4eb31d390e9033c4",
+      "lastModifiedAt": "2024-02-15T13:00:00Z"
+    },
+    {
+      "_id": "proj003",
+      "name": "ปรับปรุงระบบความปลอดภัย",
+      "description": "ปรับปรุงระบบความปลอดภัยขององค์กร",
+      "group": "Security",
+      "createdBy": "675170751cc9935392337476",
+      "members": ["678bb837d611177618c454dd", "6749ac351727b9a8c345e58b"],
+      "projectManager": "675170751cc9935392337476",
+      "status": "Active",
+      "tags": ["Security", "Infrastructure", "Network", "Compliance"],
+      "startDate": "2024-03-01T00:00:00Z",
+      "endDate": "2024-05-31T00:00:00Z",
+      "priority": "High",
+      "progress": 45,
+      "budget": 300000,
+      "projectType": "Internal",
+      "attachments": ["security-audit.pdf", "network-diagram.vsdx"],
+      "tasks": [
+        {
+          "taskId": "task004",
+          "title": "Security Audit",
+          "description": "ตรวจสอบระบบความปลอดภัยปัจจุบัน",
+          "status": "Completed",
+          "assignee": "678bb837d611177618c454dd",
+          "startDate": "2024-03-01T00:00:00Z",
+          "endDate": "2024-03-15T00:00:00Z",
+          "estimatedHours": 80,
+          "actualHours": 75,
+          "comments": [
+            {
+              "user": "675170751cc9935392337476",
+              "text": "พบจุดอ่อนที่ต้องแก้ไขเร่งด่วน",
+              "createdAt": "2024-03-10T11:00:00Z"
+            }
+          ],
+          "attachments": ["vulnerabilities.xlsx"]
+        }
+      ],
+      "milestones": [
+        {
+          "name": "Security Audit Complete",
+          "description": "เสร็จสิ้นการตรวจสอบความปลอดภัย",
+          "dueDate": "2024-03-15T00:00:00Z",
+          "completed": true
+        },
+        {
+          "name": "Critical Fixes",
+          "description": "แก้ไขจุดอ่อนที่สำคัญทั้งหมด",
+          "dueDate": "2024-04-30T00:00:00Z",
+          "completed": false
+        }
+      ],
+      "risks": [
+        {
+          "description": "ระบบหยุดทำงานระหว่างการปรับปรุง",
+          "probability": "Medium",
+          "impact": "High",
+          "mitigation": "วางแผนดำเนินการนอกเวลาทำงาน"
+        }
+      ],
+      "notifications": [
+        {
+          "userId": "6749ac351727b9a8c345e58b",
+          "message": "พบช่องโหว่ที่ต้องแก้ไขด่วน",
+          "read": true,
+          "date": "2024-03-10T11:00:00Z"
+        }
+      ],
+      "lastModifiedBy": "675170751cc9935392337476",
+      "lastModifiedAt": "2024-03-10T11:00:00Z"
+    }
+  ]
