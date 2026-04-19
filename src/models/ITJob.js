@@ -46,6 +46,6 @@ const ITJobSchema = new mongoose.Schema({
         timestamps: true // Enable automatic timestamps
     });
 
-module.exports = mongoose.model('ITJob', ITJobSchema);
-
+// module.exports = mongoose.model('ITJob', ITJobSchema);
+export default mongoose.models.ITJob || mongoose.model('ITJob', ITJobSchema);
 // Export Model

@@ -406,7 +406,7 @@ export default function ProfilePage() {
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
                 <nav className="flex space-x-4">
-                    {["Dashboard", "User List", "Add User", "User Details", "Edit User"].map((tab) => (
+                    {[ "User List"].map((tab) => (
                         <button
                             key={tab}
                             style={{

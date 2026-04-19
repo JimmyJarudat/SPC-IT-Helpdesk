@@ -42,7 +42,7 @@ const IssuePage = () => {
         {!isEditing ? (
           <div>
             <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-              API not working
+              API not working   (ยกเลิกพัฒนาทั้งหมด)
             </h1>
             <p className="text-sm text-gray-500">
               #PD-127 created by{" "}

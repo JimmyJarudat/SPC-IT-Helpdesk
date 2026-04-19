@@ -24,7 +24,6 @@ const UserSchema = new mongoose.Schema(
     profileImage: { type: String, },
     computerName: { type: String, },
     position: { type: String, },
-    department: { type: String, },
     division: { type: String, },
     location: { type: String, },
 
