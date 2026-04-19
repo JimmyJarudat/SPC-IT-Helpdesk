@@ -24,6 +24,7 @@ const LoginPage = () => {
   const [division, setDivision] = useState('');
   const [position, setPosition] = useState('');
   const [location, setLocation] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   // สถานะทั่วไป
   const [error, setError] = useState(null);
@@ -76,26 +77,27 @@ const LoginPage = () => {
   // จัดการ Login
   const handleLogin = async (e) => {
     e.preventDefault();
-
-    // ถ้ายังอยู่ในช่วงล็อก ไม่ให้ทำการล็อกอิน
     if (failedLoginAttempts >= 3 && timeLeft > 0) return;
 
     try {
       setError(null);
+      setIsLoading(true); // เริ่ม loading
       await login(username, password);
       router.push('/overview');
     } catch (error) {
       setError(error.message);
       const newAttempts = failedLoginAttempts + 1;
       setFailedLoginAttempts(newAttempts);
-
-      // ตั้งเวลาล็อกทันทีเมื่อครบ 3 ครั้ง
       if (newAttempts >= 3) {
         const unlockTime = new Date().getTime() + 5 * 60 * 1000;
         setLockTime(unlockTime);
       }
+    } finally {
+      setIsLoading(false); // หยุด loading ไม่ว่าจะสำเร็จหรือไม่
     }
   };
+
+
 
   // จัดการปิด Modal — ปิดได้เฉพาะเมื่อหมดเวลาล็อกแล้ว
   const handleCloseModal = () => {
@@ -216,10 +218,18 @@ const LoginPage = () => {
               <div>
                 <button
                   type="submit"
-                  disabled={failedLoginAttempts >= 3 && timeLeft > 0}
-                  className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={(failedLoginAttempts >= 3 && timeLeft > 0) || isLoading}
+                  className="w-full bg-blue-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  Login
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                      </svg>
+                      กำลังเข้าสู่ระบบ...
+                    </>
+                  ) : 'Login'}
                 </button>
               </div>
             </>
